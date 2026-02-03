@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Soften all default borders globally */
+*, ::before, ::after {
+  border-color: rgb(226 232 240); /* slate-200 */
+}
