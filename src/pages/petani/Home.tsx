@@ -19,6 +19,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+interface Props {
+  statusVerifikasi: "pending" | "verified" | "rejected";
+}
+
 const statusConfig = {
   verified: {
     label: "Terverifikasi",
@@ -52,9 +56,7 @@ interface SubmissionDetail {
   status: "dijadwalkan" | "dikirim" | "selesai";
 }
 
-export default function PetaniHome() { // Removed Props
-
-
+export default function PetaniHome({ statusVerifikasi }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<{
     namaPupuk: string;
@@ -70,7 +72,6 @@ export default function PetaniHome() { // Removed Props
   const [latestSubmission, setLatestSubmission] = useState<RiwayatItem | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const statusVerifikasi = profile?.status_verifikasi ? "verified" : "pending";
   const isVerified = statusVerifikasi === "verified";
   const config = statusConfig[statusVerifikasi];
 

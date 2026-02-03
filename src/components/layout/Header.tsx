@@ -1,11 +1,15 @@
 interface HeaderProps {
   role: string;
   activeTab: string;
+  isSidebarOpen: boolean;
+  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function Header({
   role,
   activeTab,
+  // isSidebarOpen and setSidebarOpen are not used in this component yet
+  // but are kept in the interface for future mobile menu functionality
 }: HeaderProps) {
   const fullName = localStorage.getItem("full_name") || "User";
   const initials = fullName

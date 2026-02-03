@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+interface Props {
+  statusVerifikasi: "pending" | "verified" | "rejected";
+}
+
 interface LaporanItem {
   id: number;
   tanggalPanen: string;

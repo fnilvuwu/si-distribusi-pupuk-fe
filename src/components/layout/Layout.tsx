@@ -7,7 +7,7 @@ interface LayoutProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
     isSidebarOpen: boolean;
-    setSidebarOpen: (open: boolean) => void;
+    setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
     onLogout: () => void;
     children: React.ReactNode;
 }
