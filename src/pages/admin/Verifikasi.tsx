@@ -1,6 +1,8 @@
 import {
   approveVerifikasiHasilTani,
   approveVerifikasiPetani,
+  getRiwayatVerifikasiHasilTani,
+  getRiwayatVerifikasiPetani,
   getVerifikasiHasilTani,
   getVerifikasiHasilTaniDetail,
   getVerifikasiPetani,
@@ -9,7 +11,7 @@ import {
   rejectVerifikasiPetani,
   type VerifikasiHasilTani,
   type VerifikasiPetani,
-  type VerifikasiPetaniDetail,
+  type VerifikasiPetaniDetail
 } from "@/api/admin";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -30,12 +32,14 @@ export default function AdminVerifikasi() {
 
   // Petani State
   const [petaniList, setPetaniList] = useState<VerifikasiPetani[]>([]);
+  const [riwayatPetaniList, setRiwayatPetaniList] = useState<VerifikasiPetani[]>([]);
   const [selectedPetani, setSelectedPetani] = useState<VerifikasiPetaniDetail | null>(null);
   const [petaniPage, setPetaniPage] = useState(1);
   const [petaniTotalPages, setPetaniTotalPages] = useState(1);
 
   // Hasil Tani State
   const [hasilTaniList, setHasilTaniList] = useState<VerifikasiHasilTani[]>([]);
+  const [riwayatHasilTaniList, setRiwayatHasilTaniList] = useState<VerifikasiHasilTani[]>([]);
   const [selectedHasilTani, setSelectedHasilTani] = useState<VerifikasiHasilTani | null>(null);
   const [hasilTaniPage, setHasilTaniPage] = useState(1);
   const [hasilTaniTotalPages, setHasilTaniTotalPages] = useState(1);
@@ -51,7 +55,10 @@ export default function AdminVerifikasi() {
       setIsLoading(true);
       setError(null);
       const response = await getVerifikasiPetani({ page: petaniPage, page_size: 10 });
+      // Fetch history as well
+      const historyResponse = await getRiwayatVerifikasiPetani({ page: 1, page_size: 20 });
       setPetaniList(response);
+      setRiwayatPetaniList(historyResponse);
       setPetaniTotalPages(1);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err
@@ -69,7 +76,10 @@ export default function AdminVerifikasi() {
       setIsLoading(true);
       setError(null);
       const response = await getVerifikasiHasilTani({ page: hasilTaniPage, page_size: 10 });
+      // Fetch history as well
+      const historyResponse = await getRiwayatVerifikasiHasilTani({ page: 1, page_size: 20 });
       setHasilTaniList(response);
+      setRiwayatHasilTaniList(historyResponse);
       setHasilTaniTotalPages(1); // Backend does not return total pages yet
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err
@@ -222,14 +232,14 @@ export default function AdminVerifikasi() {
                   <div className="flex-1 p-4 border rounded-lg flex flex-col items-center gap-2 bg-gray-50">
                     <ImageIcon size={24} className="text-blue-500" />
                     <span className="text-xs font-bold">KTP</span>
-                    <Button variant="ghost" size="sm" className="text-[10px] h-6">Lihat Foto</Button>
+                    <Button variant="ghost" size="sm" className="text-[10px] h-6" onClick={() => window.open(selectedPetani.url_ktp!, '_blank')}>Lihat Foto</Button>
                   </div>
                 )}
                 {selectedPetani.url_kartu_tani && (
                   <div className="flex-1 p-4 border rounded-lg flex flex-col items-center gap-2 bg-gray-50">
                     <ImageIcon size={24} className="text-blue-500" />
                     <span className="text-xs font-bold">KARTU TANI</span>
-                    <Button variant="ghost" size="sm" className="text-[10px] h-6">Lihat Foto</Button>
+                    <Button variant="ghost" size="sm" className="text-[10px] h-6" onClick={() => window.open(selectedPetani.url_kartu_tani!, '_blank')}>Lihat Foto</Button>
                   </div>
                 )}
               </div>
@@ -327,7 +337,7 @@ export default function AdminVerifikasi() {
               <div className="p-4 border-2 border-dashed rounded-lg flex flex-col items-center gap-2">
                 <ImageIcon size={20} className="text-gray-400" />
                 <span className="text-[10px] font-bold text-gray-500">BUKTI PANEN</span>
-                <Button variant="ghost" size="sm">Lihat Foto</Button>
+                <Button variant="ghost" size="sm" onClick={() => window.open(selectedHasilTani.bukti_url!, '_blank')}>Lihat Foto</Button>
               </div>
             )}
             {!selectedHasilTani.status_verifikasi && (
@@ -403,11 +413,11 @@ export default function AdminVerifikasi() {
   }
 
   // --- MAIN LIST VIEW ---
-  const pendingPetani = petaniList.filter(p => !p.status_verifikasi);
-  const verifiedPetani = petaniList.filter(p => p.status_verifikasi);
+  const pendingPetani = petaniList; // Now assumes API returns pending only or we show all from this endpoint as pending
+  // const verifiedPetani = petaniList.filter(p => p.status_verifikasi); // OLD LOGIC
 
-  const pendingHasilTani = hasilTaniList.filter(h => !h.status_verifikasi);
-  const verifiedHasilTani = hasilTaniList.filter(h => h.status_verifikasi);
+  const pendingHasilTani = hasilTaniList; // Idem
+  // const verifiedHasilTani = hasilTaniList.filter(h => h.status_verifikasi); // OLD LOGIC
 
   return (
     <div className="space-y-6">
@@ -597,8 +607,8 @@ export default function AdminVerifikasi() {
             </thead>
             <tbody className="divide-y text-sm">
               {activeSubTab === "biodata" ? (
-                verifiedPetani.length > 0 ? (
-                  verifiedPetani.map(petani => (
+                riwayatPetaniList.length > 0 ? (
+                  riwayatPetaniList.map(petani => (
                     <tr key={petani.user_id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <p className="font-bold text-gray-800">{petani.nama_lengkap}</p>
@@ -631,8 +641,8 @@ export default function AdminVerifikasi() {
                   </tr>
                 )
               ) : (
-                verifiedHasilTani.length > 0 ? (
-                  verifiedHasilTani.map(hasil => (
+                riwayatHasilTaniList.length > 0 ? (
+                  riwayatHasilTaniList.map(hasil => (
                     <tr key={hasil.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <p className="font-bold text-gray-800">{hasil.nama_lengkap}</p>

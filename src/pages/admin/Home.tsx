@@ -8,14 +8,18 @@ export default function Home() {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState({
-        name: "",
-        nik: "",
-        phone: "",
-        password: "", // Keep password local/empty initially
+        nama_lengkap: "",
+        alamat: "",
+        no_hp: "",
     });
 
-    // State untuk menyimpan data sementara saat edit
-    const [tempData, setTempData] = useState(formData);
+    // State untuk menyimpan data sementara saat edit & password baru
+    const [tempData, setTempData] = useState({
+        ...formData,
+        current_password: "",
+        new_password: "",
+        new_password_confirm: ""
+    });
 
     useEffect(() => {
         loadProfile();
@@ -26,8 +30,9 @@ export default function Home() {
             setIsLoading(true);
             const data = await getAdminProfile();
             setFormData({
-                ...data,
-                password: "password123" // Mock password placeholder
+                nama_lengkap: data.nama_lengkap || "",
+                alamat: data.alamat || "",
+                no_hp: data.no_hp || "",
             });
         } catch (error) {
             console.error("Gagal memuat profil admin", error);
@@ -37,13 +42,24 @@ export default function Home() {
     };
 
     const handleEdit = () => {
-        setTempData(formData);
+        setTempData({
+            ...formData,
+            current_password: "",
+            new_password: "",
+            new_password_confirm: ""
+        });
         setIsEditing(true);
     };
 
     const handleCancel = () => {
         setIsEditing(false);
-        setTempData(formData);
+        setIsEditing(false);
+        setTempData({
+            ...formData,
+            current_password: "",
+            new_password: "",
+            new_password_confirm: ""
+        });
     };
 
     const handleSave = async () => {
@@ -100,7 +116,7 @@ export default function Home() {
                         <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600 border-4 border-white shadow-sm">
                             <User size={40} />
                         </div>
-                        <h3 className="font-bold text-lg text-gray-800">{formData.name}</h3>
+                        <h3 className="font-bold text-lg text-gray-800">{formData.nama_lengkap}</h3>
                         <p className="text-sm text-gray-500 mb-4">Administrator</p>
                         <div className="w-full border-t border-emerald-100 pt-4 mt-2">
                             <div className="grid grid-cols-2 gap-2 text-center">
@@ -129,34 +145,34 @@ export default function Home() {
                                 {isEditing ? (
                                     <input
                                         type="text"
-                                        name="name"
-                                        value={tempData.name}
+                                        name="nama_lengkap"
+                                        value={tempData.nama_lengkap}
                                         onChange={handleChange}
                                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                                     />
                                 ) : (
                                     <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium border border-gray-100">
-                                        {formData.name}
+                                        {formData.nama_lengkap}
                                     </div>
                                 )}
                             </div>
 
-                            {/* NIK */}
+                            {/* Alamat (Replacing NIK) */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                    <CreditCard size={16} /> NIK
+                                    <CreditCard size={16} /> Alamat
                                 </label>
                                 {isEditing ? (
                                     <input
                                         type="text"
-                                        name="nik"
-                                        value={tempData.nik}
+                                        name="alamat"
+                                        value={tempData.alamat}
                                         onChange={handleChange}
                                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                                     />
                                 ) : (
                                     <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium border border-gray-100">
-                                        {formData.nik}
+                                        {formData.alamat || "-"}
                                     </div>
                                 )}
                             </div>
@@ -169,38 +185,67 @@ export default function Home() {
                                 {isEditing ? (
                                     <input
                                         type="tel"
-                                        name="phone"
-                                        value={tempData.phone}
+                                        name="no_hp"
+                                        value={tempData.no_hp}
                                         onChange={handleChange}
                                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                                     />
                                 ) : (
                                     <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium border border-gray-100">
-                                        {formData.phone}
+                                        {formData.no_hp}
                                     </div>
                                 )}
                             </div>
 
-                            {/* Password */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                    <Lock size={16} /> Password
-                                </label>
-                                {isEditing ? (
-                                    <input
-                                        type="text"
-                                        name="password"
-                                        value={tempData.password}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all font-mono"
-                                    />
-                                ) : (
-                                    <div className="p-3 bg-gray-50 rounded-lg text-gray-800 font-medium border border-gray-100 font-mono flex justify-between items-center">
-                                        <span>{'•'.repeat(formData.password.length)}</span>
-                                        <span className="text-xs text-gray-400 font-sans">(Tersembunyi)</span>
+                            {/* Password Section - Only in Edit Mode */}
+                            {isEditing && (
+                                <div className="space-y-4 pt-4 border-t border-gray-200">
+                                    <h4 className="font-semibold text-gray-800">Ubah Password</h4>
+
+                                    {/* Current Password */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <Lock size={16} /> Password Saat Ini
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="current_password"
+                                            value={tempData.current_password}
+                                            onChange={handleChange}
+                                            placeholder="Kosongkan jika tidak ingin mengubah password"
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                        />
                                     </div>
-                                )}
-                            </div>
+
+                                    {/* New Password */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <Lock size={16} /> Password Baru
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="new_password"
+                                            value={tempData.new_password}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    {/* Confirm New Password */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <Lock size={16} /> Konfirmasi Password Baru
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="new_password_confirm"
+                                            value={tempData.new_password_confirm}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </Card>

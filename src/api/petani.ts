@@ -157,25 +157,17 @@ export const laporHasilTani = async (data: LaporHasilPayload) => {
 // 8. LIST LAPORAN HASIL TANI
 export interface LaporanItem {
   id: number;
-  tanggalPanen: string;
-  jenisKomoditas: string;
-  totalHasil: number;
-  lokasi: string;
-  status: "dilaporkan" | "terverifikasi";
+  tanggal_panen: string;
+  jenis_tanaman: string;
+  jumlah_hasil: number;
+  satuan: string;
+  lokasi?: string; // Optional if not always present
+  status: "dilaporkan" | "terverifikasi" | "ditolak"; // Updated status values
+  created_at?: string;
 }
 
 export const getLaporanList = async (): Promise<LaporanItem[]> => {
-  // Mocking response for now as we pretend endpoint exists
-  // const res = await api.get("/petani/laporan_hasil_tani");
-  // return res.data;
-
-  // Returning empty array or mock data for UI testing if real endpoint fails
-  try {
-    const res = await api.get("/petani/laporan_hasil_tani");
-    return res.data;
-  } catch (e) {
-    console.warn("Using mock data for Laporan List");
-    return [];
-  }
+  const res = await api.get("/petani/laporan_hasil_tani");
+  return res.data;
 };
 

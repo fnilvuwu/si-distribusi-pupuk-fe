@@ -25,66 +25,60 @@ export interface ApiResponse<T> {
 }
 
 export interface AdminProfile {
-    name: string;
-    nik: string;
-    phone: string;
+    username?: string;
+    nama_lengkap: string;
+    alamat?: string;
+    no_hp: string;
     // password can allow update
 }
 
+export interface UpdateAdminProfileRequest {
+    nama_lengkap: string;
+    alamat: string;
+    no_hp: string;
+    current_password?: string;
+    new_password?: string;
+    new_password_confirm?: string;
+}
+
 export const getAdminProfile = async (): Promise<AdminProfile> => {
-    // Mock
-    // const res = await api.get("/admin/profile");
-    // return res.data;
-    return {
-        name: "Admin Distribusi",
-        nik: "3500000000000001",
-        phone: "081234567890"
-    };
+    const res = await api.get("/admin/profile");
+    return res.data;
 };
 
-export const updateAdminProfile = async (data: AdminProfile): Promise<ApiResponse<null>> => {
-    // Mock
-    // return api.post("/admin/profile", data);
-    console.log("Mock update admin: ", data);
-    return { success: true, message: "Profil berhasil diperbarui", data: null };
+export const updateAdminProfile = async (data: UpdateAdminProfileRequest): Promise<ApiResponse<null>> => {
+    const res = await api.put("/admin/profile", data);
+    return res.data;
 };
 
 // ===== 7. Master Data Pupuk =====
 export interface PupukItem {
     id: number;
     nama_pupuk: string;
+    jumlah_stok?: number; // Now included in API response
     satuan: string;
     deskripsi?: string;
     foto?: string;
 }
 
 export const getMasterPupukList = async (): Promise<PupukItem[]> => {
-    // Mock
-    // const res = await api.get("/admin/master_pupuk");
-    // return res.data;
-    return [
-        { id: 1, nama_pupuk: "Urea", satuan: "Kg" },
-        { id: 2, nama_pupuk: "NPK", satuan: "Kg" },
-        { id: 3, nama_pupuk: "ZA", satuan: "Kg" },
-    ];
+    const res = await api.get("/admin/pupuk_list");
+    return res.data;
 };
 
 export const addMasterPupuk = async (data: Omit<PupukItem, 'id'>): Promise<ApiResponse<PupukItem>> => {
-    // Mock
-    console.log("Add pupuk", data);
-    return { success: true, message: "Pupuk berhasil ditambahkan", data: { id: Date.now(), ...data } };
+    const res = await api.post("/admin/pupuk_list", data);
+    return res.data;
 };
 
 export const updateMasterPupuk = async (id: number, data: Partial<PupukItem>): Promise<ApiResponse<PupukItem>> => {
-    // Mock
-    console.log("Update pupuk", id, data);
-    return { success: true, message: "Pupuk berhasil diupdate", data: { id, nama_pupuk: "Updated", satuan: "Kg", ...data } };
+    const res = await api.put(`/admin/pupuk_list/${id}`, data);
+    return res.data;
 };
 
 export const deleteMasterPupuk = async (id: number): Promise<ApiResponse<null>> => {
-    // Mock
-    console.log("Delete pupuk", id);
-    return { success: true, message: "Pupuk berhasil dihapus", data: null };
+    const res = await api.delete(`/admin/pupuk_list/${id}`);
+    return res.data;
 };
 
 // ===== 1. Verifikasi Petani Types =====
@@ -135,9 +129,6 @@ export interface VerifikasiHasilTani {
     created_at: string;
     // Optional fields from detail view
     bukti_url?: string;
-    // Fields that might not be in backend yet but were in frontend:
-    // petani_nik, luas_lahan, lokasi_detail, keterangan
-    // We remove them or make them optional if we don't expect them
 }
 
 export interface VerifikasiHasilTaniParams extends PaginationParams {
@@ -168,6 +159,10 @@ export interface PersetujuanPupuk {
 export interface ApprovePersetujuanPupukRequest {
     jumlah_disetujui: number;
     pupuk_id?: number;
+    jadwal_id?: number; // Added jadwal_id
+    // Optional additional info if needed by backend, though jadwal_id should suffice if it links to schedule
+    tanggal_pengiriman?: string;
+    lokasi?: string;
 }
 
 export interface RejectPersetujuanPupukRequest {
@@ -343,6 +338,16 @@ export const rejectVerifikasiPetani = async (
     return response.data;
 };
 
+/**
+ * Get history of verified/rejected farmers
+ */
+export const getRiwayatVerifikasiPetani = async (
+    params?: VerifikasiPetaniParams
+): Promise<VerifikasiPetani[]> => {
+    const response = await api.get(`${BASE_URL}/riwayat_verifikasi_petani`, { params });
+    return response.data;
+};
+
 // ===== 2. Verifikasi Hasil Tani =====
 
 /**
@@ -390,6 +395,16 @@ export const rejectVerifikasiHasilTani = async (
         `${BASE_URL}/verifikasi_hasil_tani/${laporanId}/reject`,
         data
     );
+    return response.data;
+};
+
+/**
+ * Get history of verified/rejected harvest reports
+ */
+export const getRiwayatVerifikasiHasilTani = async (
+    params?: VerifikasiHasilTaniParams
+): Promise<VerifikasiHasilTani[]> => {
+    const response = await api.get(`${BASE_URL}/riwayat_verifikasi_hasil_tani`, { params });
     return response.data;
 };
 

@@ -1,5 +1,5 @@
-import type { LaporHasilPayload } from "@/api/petani";
-import { laporHasilTani } from "@/api/petani";
+import type { LaporHasilPayload, LaporanItem } from "@/api/petani";
+import { laporHasilTani, getLaporanList } from "@/api/petani";
 import AddLaporanModal from "@/components/petani/AddLaporanModal";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -21,14 +21,7 @@ interface Props {
   statusVerifikasi: "pending" | "verified" | "rejected";
 }
 
-interface LaporanItem {
-  id: number;
-  tanggalPanen: string;
-  jenisKomoditas: string;
-  totalHasil: number;
-  lokasi: string;
-  status: "dilaporkan" | "terverifikasi";
-}
+// Local interface removed, using imported LaporanItem
 
 interface LaporanInput {
   tanggalPanen: string;
@@ -77,7 +70,7 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
       // which currently returns [] in catch block.
 
       // Let's rely on the API function I created
-      const data = await import("@/api/petani").then(m => m.getLaporanList());
+      const data = await getLaporanList();
       setLaporanList(data);
     } catch (err) {
       console.error("Gagal mengambil laporan", err);
@@ -89,8 +82,8 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
   // Logic for filtering
   const filteredLaporan = useMemo(() => {
     return laporanList.filter((l) => {
-      const matchesSearch = l.jenisKomoditas.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.lokasi.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = l.jenis_tanaman.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (l.lokasi?.toLowerCase() || "").includes(searchQuery.toLowerCase());
       const matchesStatus = filterStatus === "all" || l.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
@@ -138,12 +131,14 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
   };
 
   // Hitung statistik untuk chart
-  const totalHasilKeseluruhan = laporanList.reduce((sum, item) => sum + item.totalHasil, 0);
+  // Hitung statistik untuk chart
+  const totalHasilKeseluruhan = laporanList.reduce((sum, item) => sum + item.jumlah_hasil, 0);
   const rataRataHasil = laporanList.length ? Math.round(totalHasilKeseluruhan / laporanList.length) : 0;
 
   const statusConfig = {
     dilaporkan: { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200", label: "Dilaporkan" },
     terverifikasi: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200", label: "Terverifikasi" },
+    ditolak: { bg: "bg-red-50", text: "text-red-600", border: "border-red-200", label: "Ditolak" },
   };
 
   return (
@@ -264,15 +259,15 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
                     </div>
                     <div className="space-y-2 truncate">
                       <p className="font-bold text-gray-900 text-lg leading-tight truncate">
-                        {laporan.jenisKomoditas}
+                        {laporan.jenis_tanaman}
                       </p>
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span className="flex items-center gap-1"><Calendar size={13} /> {new Date(laporan.tanggalPanen).toLocaleDateString("id-ID")}</span>
-                          <span className="bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-md">{laporan.totalHasil} Kg</span>
+                          <span className="flex items-center gap-1"><Calendar size={13} /> {new Date(laporan.tanggal_panen).toLocaleDateString("id-ID")}</span>
+                          <span className="bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-md">{laporan.jumlah_hasil} {laporan.satuan}</span>
                         </div>
                         <span className="flex items-center gap-1 text-[11px] text-gray-400 italic truncate">
-                          <MapPin size={11} /> {laporan.lokasi}
+                          <MapPin size={11} /> {laporan.lokasi || "-"}
                         </span>
                       </div>
                     </div>

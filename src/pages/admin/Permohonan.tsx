@@ -2,7 +2,9 @@ import {
   approvePersetujuanPupuk,
   getPersetujuanPupuk,
   getStokList,
+  getJadwalDistribusi,
   rejectPersetujuanPupuk,
+  type JadwalDistribusi,
   type PersetujuanPupuk,
   type StokPupuk
 } from "@/api/admin";
@@ -23,16 +25,29 @@ export default function AdminPermohonan() {
   const [error, setError] = useState<string | null>(null);
 
   const [stokList, setStokList] = useState<StokPupuk[]>([]);
+  const [jadwalList, setJadwalList] = useState<JadwalDistribusi[]>([]);
+  
   const [formData, setFormData] = useState({
     jumlahDisetujui: 0,
     pupukId: 0,
+    jadwalId: 0,
     alasanPenolakan: "",
   });
 
   useEffect(() => {
     loadPermohonan();
     loadStokList();
+    loadJadwalList();
   }, []);
+
+  const loadJadwalList = async () => {
+    try {
+      const data = await getJadwalDistribusi();
+      setJadwalList(data);
+    } catch (err) {
+      console.error("Failed to load jadwal list", err);
+    }
+  };
 
   const loadStokList = async () => {
     try {
@@ -64,6 +79,7 @@ export default function AdminPermohonan() {
     setFormData({
       jumlahDisetujui: app.jumlah_diminta || 0,
       pupukId: app.pupuk_id || 0,
+      jadwalId: 0,
       alasanPenolakan: "",
     });
   };
@@ -84,21 +100,17 @@ export default function AdminPermohonan() {
   const submitApproval = async () => {
     if (!selectedApp) return;
 
-    // Validate jumlah_disetujui
     if (formData.jumlahDisetujui <= 0) {
       alert("Jumlah yang disetujui harus lebih dari 0");
       return;
     }
 
-    // Constraint removed as per user request to allow editing amount freerly, 
-    // but simplified check:
-    // Backend will handle stock validation.
-
     try {
       setIsLoading(true);
       await approvePersetujuanPupuk(selectedApp.id, {
         jumlah_disetujui: formData.jumlahDisetujui,
-        pupuk_id: formData.pupukId
+        pupuk_id: formData.pupukId,
+        jadwal_id: formData.jadwalId // Include jadwal_id
       });
       alert("Permohonan berhasil disetujui!");
       closeModal();
@@ -274,7 +286,6 @@ export default function AdminPermohonan() {
                       })
                     }
                     min="1"
-                  // max removed to allow override
                   />
                   <div className="flex justify-between text-xs mt-1">
                     <span className="text-gray-500">
@@ -306,6 +317,29 @@ export default function AdminPermohonan() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                   <label className="block text-sm font-bold mb-2">
+                     Jadwal Pengambilan
+                   </label>
+                   <select
+                     className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white"
+                     value={formData.jadwalId}
+                     onChange={(e) =>
+                       setFormData({
+                         ...formData,
+                         jadwalId: parseInt(e.target.value) || 0,
+                       })
+                     }
+                   >
+                     <option value={0}>-- Pilih Jadwal --</option>
+                     {jadwalList.map((jadwal) => (
+                       <option key={jadwal.id} value={jadwal.id}>
+                         {jadwal.nama_acara} - {new Date(jadwal.tanggal).toLocaleDateString("id-ID")} ({jadwal.lokasi})
+                       </option>
+                     ))}
+                   </select>
                 </div>
 
                 <div className="flex gap-2">

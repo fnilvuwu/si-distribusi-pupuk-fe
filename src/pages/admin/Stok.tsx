@@ -31,18 +31,26 @@ export default function AdminStok() {
     const [error, setError] = useState<string | null>(null);
     const [historyFilter, setHistoryFilter] = useState<number | null>(null);
 
-    // Derived state: Combined Master Data with calculated stock
+    // Derived state: Combined Master Data with stock
     const stokPupuk: StokPupukDisplay[] = masterPupuk.map(pupuk => {
-        // Calculate stock from history for this pupuk
-        const total = allRiwayatStock
-            .filter(r => r.pupuk_id === pupuk.id)
-            .reduce((acc, item) => {
-                return item.tipe === 'tambah' ? acc + item.jumlah : acc - item.jumlah;
-            }, 0);
+        // Use jumlah_stok from API if available, otherwise calculate from history
+        let stockAmount: number;
+
+        if (pupuk.jumlah_stok !== undefined) {
+            // New API response includes jumlah_stok directly
+            stockAmount = pupuk.jumlah_stok;
+        } else {
+            // Fallback: Calculate stock from history for backwards compatibility
+            stockAmount = allRiwayatStock
+                .filter(r => r.pupuk_id === pupuk.id)
+                .reduce((acc, item) => {
+                    return item.tipe === 'tambah' ? acc + item.jumlah : acc - item.jumlah;
+                }, 0);
+        }
 
         return {
             ...pupuk,
-            jumlah_stok: total
+            jumlah_stok: stockAmount
         };
     });
 
