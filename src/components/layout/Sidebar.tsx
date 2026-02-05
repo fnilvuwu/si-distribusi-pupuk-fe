@@ -29,12 +29,12 @@ export default function Sidebar({
   return (
     <aside
       className={`
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:w-20"}
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-20"}
         fixed md:relative z-50 h-full bg-white border-r transition-all duration-300 w-64 flex flex-col shadow-xl md:shadow-none
       `}
     >
       {/* Logo */}
-      <div className="p-6 border-b flex items-center gap-3 bg-emerald-700 text-white md:bg-white md:text-emerald-700">
+      <div className={`${isSidebarOpen ? "p-6" : "p-4 justify-center"} border-b flex items-center gap-3 bg-emerald-700 text-white md:bg-white md:text-emerald-700`}>
         <div className="h-14 w-14 flex items-center justify-center overflow-hidden">
           <img
             src="/logo_mamasa.png"
@@ -62,7 +62,7 @@ export default function Sidebar({
                 if (window.innerWidth < 768) setSidebarOpen(false);
               }}
               className={`
-                w-full flex items-center gap-4 p-3 rounded-xl transition-all
+                w-full flex items-center gap-4 p-3 rounded-xl transition-all ${!isSidebarOpen && "justify-center"}
                 ${isActive
                   ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-200"
                   : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-600"
@@ -80,7 +80,7 @@ export default function Sidebar({
       <div className="p-4 border-t mt-auto">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-4 p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all font-bold"
+          className={`w-full flex items-center gap-4 p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all font-bold ${!isSidebarOpen && "justify-center"}`}
         >
           <LogOut size={20} />
           {isSidebarOpen && <span>Log Out</span>}

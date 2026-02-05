@@ -26,7 +26,7 @@ export default function Header({
       <div className="flex items-center gap-4">
         <button
           onClick={() => setSidebarOpen(!isSidebarOpen)}
-          className="p-2 -ml-2 rounded-lg hover:bg-gray-100 text-slate-600 md:hidden"
+          className="p-2 -ml-2 rounded-lg hover:bg-gray-100 text-slate-600"
         >
           <Menu size={24} />
         </button>

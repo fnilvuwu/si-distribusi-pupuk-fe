@@ -10,11 +10,7 @@ user bisa konfirmasi penerimaan pupuk di sini
 
 Role Admin:
 [?] endpoint untuk edit admin profile
-[ ] admin bisa menambah jenis pupuk 
+[ ] admin bisa menambah jenis pupuk, butuh endpoint
 Manajemen Stok
 Kelola stok pupuk di gudang pusat
 [ ] Lihat Foto verifikasi tidak fungsional
-
-Role: superadmin
-[✔️] add new user masih error
-[✔️] edit belum functional
