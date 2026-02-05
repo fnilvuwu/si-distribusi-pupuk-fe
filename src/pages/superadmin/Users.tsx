@@ -35,6 +35,9 @@ export default function SuperAdminUsers() {
     password: "",
     role: "",
     nama_lengkap: "",
+    alamat: "",
+    no_hp: "",
+    perusahaan: "",
   });
 
   // Get token from localStorage
@@ -91,6 +94,9 @@ export default function SuperAdminUsers() {
         password: "",
         role: user.role,
         nama_lengkap: user.nama_lengkap,
+        alamat: user.alamat || "",
+        no_hp: user.no_hp || "",
+        perusahaan: user.perusahaan || "",
       });
       setSelectedUserId(userId);
       setShowEditModal(true);
@@ -114,6 +120,9 @@ export default function SuperAdminUsers() {
         username: formData.username,
         role: formData.role,
         nama_lengkap: formData.nama_lengkap,
+        alamat: formData.alamat,
+        no_hp: formData.no_hp,
+        perusahaan: formData.perusahaan,
       };
 
       // Only include password if it's not empty
@@ -168,6 +177,9 @@ export default function SuperAdminUsers() {
       password: "",
       role: "",
       nama_lengkap: "",
+      alamat: "",
+      no_hp: "",
+      perusahaan: "",
     });
   };
 
@@ -393,6 +405,50 @@ export default function SuperAdminUsers() {
                     className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    No. HP <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.no_hp}
+                    onChange={(e) =>
+                      setFormData({ ...formData, no_hp: e.target.value })
+                    }
+                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                {formData.role === "distributor" && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Perusahaan <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.perusahaan || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, perusahaan: e.target.value })
+                      }
+                      className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+                )}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Alamat <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    required
+                    value={formData.alamat}
+                    onChange={(e) =>
+                      setFormData({ ...formData, alamat: e.target.value })
+                    }
+                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    rows={3}
+                  />
+                </div>
               </div>
               <div className="mt-6 flex gap-3 justify-end">
                 <Button
@@ -438,52 +494,6 @@ export default function SuperAdminUsers() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Username <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Password (kosongkan jika tidak ingin mengubah)
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Role <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.role}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
-                    }
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
-                  >
-                    <option value="">Pilih Role</option>
-                    <option value="admin">Admin</option>
-                    <option value="distributor">Distributor</option>
-                    <option value="petani">Petani</option>
-                    <option value="super_admin">Super Admin</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
                     Nama Lengkap <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -492,6 +502,63 @@ export default function SuperAdminUsers() {
                     value={formData.nama_lengkap}
                     onChange={(e) =>
                       setFormData({ ...formData, nama_lengkap: e.target.value })
+                    }
+                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    No. HP <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.no_hp}
+                    onChange={(e) =>
+                      setFormData({ ...formData, no_hp: e.target.value })
+                    }
+                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                {formData.role === "distributor" && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Perusahaan <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.perusahaan || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, perusahaan: e.target.value })
+                      }
+                      className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+                )}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Alamat <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    required
+                    value={formData.alamat}
+                    onChange={(e) =>
+                      setFormData({ ...formData, alamat: e.target.value })
+                    }
+                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    rows={3}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Password (kosongkan jika tidak ingin mengubah)
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
                     }
                     className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
                   />

@@ -5,7 +5,6 @@ interface LayoutProps {
     role: string;
     navigation: Record<string, { id: string; label: string; icon: React.ComponentType<{ size: number }> }[]>;
     activeTab: string;
-    setActiveTab: (tab: string) => void;
     isSidebarOpen: boolean;
     setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
     onLogout: () => void;
@@ -16,7 +15,6 @@ export default function Layout({
     role,
     navigation,
     activeTab,
-    setActiveTab,
     isSidebarOpen,
     setSidebarOpen,
     onLogout,
@@ -35,8 +33,6 @@ export default function Layout({
             <Sidebar
                 role={role}
                 navigation={navigation}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
                 isSidebarOpen={isSidebarOpen}
                 setSidebarOpen={setSidebarOpen}
                 onLogout={onLogout}

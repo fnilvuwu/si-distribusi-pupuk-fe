@@ -24,6 +24,9 @@ export interface CreateUserData {
     password: string;
     role: string;
     nama_lengkap: string;
+    alamat?: string;
+    no_hp?: string;
+    perusahaan?: string;
 }
 
 export interface UpdateUserData {
@@ -31,6 +34,9 @@ export interface UpdateUserData {
     password?: string;
     role?: string;
     nama_lengkap?: string;
+    alamat?: string;
+    no_hp?: string;
+    perusahaan?: string;
 }
 
 // ==================== API FUNCTIONS ====================

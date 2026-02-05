@@ -16,5 +16,5 @@ Kelola stok pupuk di gudang pusat
 [ ] Lihat Foto verifikasi tidak fungsional
 
 Role: superadmin
-[ ] add new user masih error
-[ ] edit belum functional
+[✔️] add new user masih error
+[✔️] edit belum functional
