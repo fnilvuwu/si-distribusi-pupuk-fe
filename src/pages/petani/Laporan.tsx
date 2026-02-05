@@ -15,7 +15,7 @@ import {
   Sprout,
   TrendingUp
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 interface Props {
   statusVerifikasi: "pending" | "verified" | "rejected";
@@ -53,7 +53,38 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
   // If the user wants to see their history, the backend needs an endpoint.
   // I will leave it empty to show "No reports" or maybe one dummy to show UI?
   // User asked to REMOVE dummy data. So I will start empty.
+  // State for Laporan List
   const [laporanList, setLaporanList] = useState<LaporanItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (statusVerifikasi === "verified") {
+      fetchLaporan();
+    }
+  }, [statusVerifikasi]);
+
+  const fetchLaporan = async () => {
+    try {
+      setLoading(true);
+      // Pretend to fetch from endpoint
+      // In real scenario, this would be an API call
+      // const data = await getLaporanList(); 
+
+      // MOCK DATA: Simulating auto-generated reports from approved requests
+      // + manually submitted reports
+      // For now we just use the getLaporanList() which returns empty or mock
+      // But to make the UI "connected", let's try to actually call the mocked API
+      // which currently returns [] in catch block.
+
+      // Let's rely on the API function I created
+      const data = await import("@/api/petani").then(m => m.getLaporanList());
+      setLaporanList(data);
+    } catch (err) {
+      console.error("Gagal mengambil laporan", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Logic for filtering
   const filteredLaporan = useMemo(() => {
@@ -77,6 +108,14 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
   const handleSaveLaporan = async (data: LaporanInput) => {
     try {
       const payload: LaporHasilPayload = {
@@ -88,13 +127,8 @@ export default function PetaniLaporan({ statusVerifikasi }: Props) {
 
       await laporHasilTani(payload);
 
-      // Optimistically add to list (since we can't fetch)
-      const newLaporan: LaporanItem = {
-        id: Date.now(),
-        ...data,
-        status: "dilaporkan", // Default status
-      };
-      setLaporanList([newLaporan, ...laporanList]);
+      // Refresh list
+      fetchLaporan();
       setIsModalOpen(false);
       alert("Laporan hasil tani berhasil dikirim!");
     } catch (error) {

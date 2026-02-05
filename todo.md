@@ -3,14 +3,16 @@
 ❌ Rejected
 
 Role: Petani
-[?] 7. Isi halaman ini berupa jadwal pengambilan pupuk beserta riwayatnya
-terdapat informasi waktu dan tempat
-user bisa konfirmasi penerimaan pupuk di sini
-[ ] pengajuan pupuk ke admin, admin acc lalu atur jadwal pengambilan pupuk, lalu muncul di hasil tani buttonnya langsung di list tidak perlu "+ Laporan Baru"
+[ ] admin perlu memilih jadwal pengambilan pupuk dari jadwal yang tersedia
 
 Role Admin:
-[?] endpoint untuk edit admin profile
-[ ] admin bisa menambah jenis pupuk, butuh endpoint
-Manajemen Stok
-Kelola stok pupuk di gudang pusat
-[ ] Lihat Foto verifikasi tidak fungsional
+[?] integrate untuk edit admin profile
+[ ] admin bisa menambah jenis pupuk, butuh endpoint, tambahkan tombol "+ Pupuk Baru" [integrate API]
+- get pupuk list
+- edit pupuk list
+- delete pupuk list
+- add pupuk list
+
+
+All Role
+[ ] semua lihat Foto tidak fungsional, mungkin butuh static endpoint di backend

@@ -1,19 +1,40 @@
-import { CreditCard, Edit, Lock, Phone, Save, User, X } from "lucide-react";
-import { useState } from "react";
+import { getAdminProfile, updateAdminProfile } from "@/api/admin";
+import { CreditCard, Edit, Loader2, Lock, Phone, Save, User, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 
 export default function Home() {
     const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [formData, setFormData] = useState({
-        name: "Admin Distribusi",
-        nik: "3500000000000001",
-        phone: "081234567890",
-        password: "password123",
+        name: "",
+        nik: "",
+        phone: "",
+        password: "", // Keep password local/empty initially
     });
 
     // State untuk menyimpan data sementara saat edit
     const [tempData, setTempData] = useState(formData);
+
+    useEffect(() => {
+        loadProfile();
+    }, []);
+
+    const loadProfile = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getAdminProfile();
+            setFormData({
+                ...data,
+                password: "password123" // Mock password placeholder
+            });
+        } catch (error) {
+            console.error("Gagal memuat profil admin", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleEdit = () => {
         setTempData(formData);
@@ -25,11 +46,16 @@ export default function Home() {
         setTempData(formData);
     };
 
-    const handleSave = () => {
-        setFormData(tempData);
-        setIsEditing(false);
-        // Di sini nanti bisa ditambahkan logika untuk mengirim data ke API
-        console.log("Data saved:", tempData);
+    const handleSave = async () => {
+        try {
+            await updateAdminProfile(tempData);
+            setFormData(tempData);
+            setIsEditing(false);
+            alert("Profil berhasil diperbarui!");
+        } catch (error) {
+            console.error("Gagal update profil", error);
+            alert("Gagal memperbarui profil.");
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +65,10 @@ export default function Home() {
             [name]: value,
         }));
     };
+
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-emerald-600" /></div>;
+    }
 
     return (
         <div className="space-y-6">

@@ -24,6 +24,69 @@ export interface ApiResponse<T> {
     data: T;
 }
 
+export interface AdminProfile {
+    name: string;
+    nik: string;
+    phone: string;
+    // password can allow update
+}
+
+export const getAdminProfile = async (): Promise<AdminProfile> => {
+    // Mock
+    // const res = await api.get("/admin/profile");
+    // return res.data;
+    return {
+        name: "Admin Distribusi",
+        nik: "3500000000000001",
+        phone: "081234567890"
+    };
+};
+
+export const updateAdminProfile = async (data: AdminProfile): Promise<ApiResponse<null>> => {
+    // Mock
+    // return api.post("/admin/profile", data);
+    console.log("Mock update admin: ", data);
+    return { success: true, message: "Profil berhasil diperbarui", data: null };
+};
+
+// ===== 7. Master Data Pupuk =====
+export interface PupukItem {
+    id: number;
+    nama_pupuk: string;
+    satuan: string;
+    deskripsi?: string;
+    foto?: string;
+}
+
+export const getMasterPupukList = async (): Promise<PupukItem[]> => {
+    // Mock
+    // const res = await api.get("/admin/master_pupuk");
+    // return res.data;
+    return [
+        { id: 1, nama_pupuk: "Urea", satuan: "Kg" },
+        { id: 2, nama_pupuk: "NPK", satuan: "Kg" },
+        { id: 3, nama_pupuk: "ZA", satuan: "Kg" },
+    ];
+};
+
+export const addMasterPupuk = async (data: Omit<PupukItem, 'id'>): Promise<ApiResponse<PupukItem>> => {
+    // Mock
+    console.log("Add pupuk", data);
+    return { success: true, message: "Pupuk berhasil ditambahkan", data: { id: Date.now(), ...data } };
+};
+
+export const updateMasterPupuk = async (id: number, data: Partial<PupukItem>): Promise<ApiResponse<PupukItem>> => {
+    // Mock
+    console.log("Update pupuk", id, data);
+    return { success: true, message: "Pupuk berhasil diupdate", data: { id, nama_pupuk: "Updated", satuan: "Kg", ...data } };
+};
+
+export const deleteMasterPupuk = async (id: number): Promise<ApiResponse<null>> => {
+    // Mock
+    console.log("Delete pupuk", id);
+    return { success: true, message: "Pupuk berhasil dihapus", data: null };
+};
+
 // ===== 1. Verifikasi Petani Types =====
 export interface VerifikasiPetani {
     user_id: number;

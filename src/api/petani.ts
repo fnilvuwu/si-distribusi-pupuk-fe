@@ -67,6 +67,7 @@ export interface PengajuanPayload {
   jumlah_kg: number;
   alasan_pengajuan: string;
   lokasi_penggunaan: string;
+  jenis_tanaman?: string; // New field for Auto-Report
   dokumen_pendukung?: File;
 }
 
@@ -104,6 +105,9 @@ export interface RiwayatItem {
   jumlah_disetujui: number | null;
   status: "pending" | "dikirim" | "selesai";
   created_at: string;
+  // Added fields for Schedule
+  lokasi_pengambilan?: string;
+  waktu_pengambilan?: string;
 }
 
 export const getRiwayat = async (): Promise<RiwayatItem[]> => {
@@ -118,6 +122,8 @@ export const konfirmasiTerima = async (id: number) => {
   );
   return res.data;
 };
+
+
 
 // 7. LAPOR HASIL TANI (URLENCODED)
 export interface LaporHasilPayload {
@@ -147,3 +153,29 @@ export const laporHasilTani = async (data: LaporHasilPayload) => {
 
   return res.data;
 };
+
+// 8. LIST LAPORAN HASIL TANI
+export interface LaporanItem {
+  id: number;
+  tanggalPanen: string;
+  jenisKomoditas: string;
+  totalHasil: number;
+  lokasi: string;
+  status: "dilaporkan" | "terverifikasi";
+}
+
+export const getLaporanList = async (): Promise<LaporanItem[]> => {
+  // Mocking response for now as we pretend endpoint exists
+  // const res = await api.get("/petani/laporan_hasil_tani");
+  // return res.data;
+
+  // Returning empty array or mock data for UI testing if real endpoint fails
+  try {
+    const res = await api.get("/petani/laporan_hasil_tani");
+    return res.data;
+  } catch (e) {
+    console.warn("Using mock data for Laporan List");
+    return [];
+  }
+};
+

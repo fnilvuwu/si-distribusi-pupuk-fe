@@ -48,6 +48,7 @@ export default function PetaniPengajuan({ statusVerifikasi }: Props) {
         jumlah_kg: Number(formData.get("jumlah")),
         alasan_pengajuan: formData.get("alasan") as string,
         lokasi_penggunaan: formData.get("lokasi") as string,
+        jenis_tanaman: formData.get("jenisTanaman") as string, // Added new field
         dokumen_pendukung: formData.get("dokumen") as File | undefined,
       };
 

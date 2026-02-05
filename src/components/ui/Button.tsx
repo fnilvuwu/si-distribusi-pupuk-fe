@@ -6,6 +6,7 @@ interface ButtonProps {
   icon?: React.ComponentType<{ size: number }>;
   disabled?: boolean;
   size?: keyof typeof sizes;
+  type?: "button" | "submit" | "reset";
 }
 
 const variants = {
@@ -30,12 +31,13 @@ export const Button = ({
   icon: Icon,
   disabled = false,
   size = "md",
+  type = "button",
 }: ButtonProps) => {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      type="button"
+      type={type}
       className={`flex items-center justify-center gap-2 rounded-lg font-medium transition-all ${variants[variant]} ${sizes[size]} ${className}`}
     >
       {Icon && <Icon size={size === "sm" ? 14 : 18} />}
