@@ -145,7 +145,7 @@ export default function PetaniHome({ statusVerifikasi }: Props) {
       lokasi: "Gudang Distribusi",
       jenisPupuk: latestSubmission.nama_pupuk,
       jumlah: `${latestSubmission.jumlah_disetujui || latestSubmission.jumlah_diminta} Kg`,
-      status: latestSubmission.status === "pending" ? "dijadwalkan" : latestSubmission.status as any,
+      status: latestSubmission.status === "pending" ? "dijadwalkan" : (latestSubmission.status as "dikirim" | "selesai"),
     });
     setIsDetailOpen(true);
   };
@@ -326,7 +326,7 @@ export default function PetaniHome({ statusVerifikasi }: Props) {
                     </div>
 
                     {/* Status Badge */}
-                    <Badge status={latestSubmission.status === "pending" ? "dijadwalkan" : latestSubmission.status as any}>
+                    <Badge status={latestSubmission.status === "pending" ? "dijadwalkan" : (latestSubmission.status as "dikirim" | "selesai")}>
                       {latestSubmission.status === "dikirim" ? "DIKIRIM" : latestSubmission.status.toUpperCase()}
                     </Badge>
                   </div>

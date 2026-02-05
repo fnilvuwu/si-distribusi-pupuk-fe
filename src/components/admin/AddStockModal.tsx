@@ -55,8 +55,9 @@ export function AddStockModal({ isOpen, onClose, onSuccess, pupukId, namaPupuk, 
             setCatatan("");
             onSuccess();
             onClose();
-        } catch (err: any) {
-            setError(err.response?.data?.message || `Gagal ${mode === 'tambah' ? 'menambah' : 'mengurangi'} stok`);
+        } catch (err) {
+            const error = err as { response?: { data?: { message?: string } } };
+            setError(error.response?.data?.message || `Gagal ${mode === 'tambah' ? 'menambah' : 'mengurangi'} stok`);
             console.error(`Error ${mode} stock:`, err);
         } finally {
             setIsLoading(false);

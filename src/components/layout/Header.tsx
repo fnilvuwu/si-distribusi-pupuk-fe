@@ -1,3 +1,5 @@
+import { Menu } from "lucide-react";
+
 interface HeaderProps {
   role: string;
   activeTab: string;
@@ -8,8 +10,8 @@ interface HeaderProps {
 export default function Header({
   role,
   activeTab,
-  // isSidebarOpen and setSidebarOpen are not used in this component yet
-  // but are kept in the interface for future mobile menu functionality
+  isSidebarOpen,
+  setSidebarOpen,
 }: HeaderProps) {
   const fullName = localStorage.getItem("full_name") || "User";
   const initials = fullName
@@ -22,6 +24,12 @@ export default function Header({
   return (
     <header className="h-16 bg-white/80 backdrop-blur-md border-b px-6 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-4">
+        <button
+          onClick={() => setSidebarOpen(!isSidebarOpen)}
+          className="p-2 -ml-2 rounded-lg hover:bg-gray-100 text-slate-600 md:hidden"
+        >
+          <Menu size={24} />
+        </button>
         <h1 className="font-black text-lg md:text-xl capitalize text-slate-800 tracking-tight">
           {activeTab.replace("-", " ")}
         </h1>

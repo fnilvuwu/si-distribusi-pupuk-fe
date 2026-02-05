@@ -57,9 +57,10 @@ export default function PetaniPengajuan({ statusVerifikasi }: Props) {
       handleModalClose();
 
       alert("Pengajuan berhasil dikirim!");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error submitting form:", error);
-      alert(error.response?.data?.detail || "Terjadi kesalahan saat mengirim pengajuan");
+      const err = error as { response?: { data?: { detail?: string } } };
+      alert(err.response?.data?.detail || "Terjadi kesalahan saat mengirim pengajuan");
     } finally {
       setLoading(false);
     }

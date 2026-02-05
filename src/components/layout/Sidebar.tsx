@@ -1,16 +1,16 @@
 import { LogOut } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ComponentType<{ size: number }>;
+  path?: string; // Add path
 }
 
 interface SidebarProps {
   role: string;
   navigation: Record<string, NavItem[]>;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   isSidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   onLogout: () => void;
@@ -19,12 +19,13 @@ interface SidebarProps {
 export default function Sidebar({
   role,
   navigation,
-  activeTab,
-  setActiveTab,
   isSidebarOpen,
   setSidebarOpen,
   onLogout
 }: SidebarProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <aside
       className={`
@@ -48,26 +49,31 @@ export default function Sidebar({
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 mt-4">
-        {navigation[role].map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              setActiveTab(item.id);
-              if (window.innerWidth < 768) setSidebarOpen(false);
-            }}
-            className={`
-              w-full flex items-center gap-4 p-3 rounded-xl transition-all
-              ${
-                activeTab === item.id
+        {navigation[role]?.map((item) => {
+          const isActive = location.pathname === item.path || (item.id === 'home' && location.pathname === '/' + role);
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.path) {
+                  navigate(item.path);
+                }
+                if (window.innerWidth < 768) setSidebarOpen(false);
+              }}
+              className={`
+                w-full flex items-center gap-4 p-3 rounded-xl transition-all
+                ${isActive
                   ? "bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-200"
                   : "text-slate-500 hover:bg-emerald-50 hover:text-emerald-600"
-              }
-            `}
-          >
-            <item.icon size={20} />
-            {isSidebarOpen && <span>{item.label}</span>}
-          </button>
-        ))}
+                }
+              `}
+            >
+              <item.icon size={20} />
+              {isSidebarOpen && <span>{item.label}</span>}
+            </button>
+          )
+        })}
       </nav>
 
       {/* Logout */}

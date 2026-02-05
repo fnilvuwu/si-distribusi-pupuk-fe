@@ -1,13 +1,15 @@
 import { login } from "@/api/auth";
 import { Button } from "@/components/ui/Button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface LoginPetaniProps {
+interface LoginRoleProps {
   setRole: (role: string) => void;
-  setActiveTab: (tab: string) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
-export default function LoginRole({ setRole, setActiveTab }: LoginPetaniProps) {
+export default function LoginRole({ setRole, setActiveTab }: LoginRoleProps) {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -41,9 +43,20 @@ export default function LoginRole({ setRole, setActiveTab }: LoginPetaniProps) {
 
       // Set role and navigate
       setRole(response.role);
-      // Set the correct initial tab based on role
-      const initialTab = response.role === "super_admin" || response.role === "distributor" ? "dashboard" : "home";
-      setActiveTab(initialTab);
+
+      switch (response.role) {
+        case "super_admin":
+          navigate("/superadmin");
+          break;
+        case "distributor":
+          navigate("/distributor");
+          break;
+        case "admin":
+          navigate("/admin");
+          break;
+        default:
+          navigate("/petani");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login gagal. Silakan coba lagi.");
     } finally {
@@ -111,7 +124,11 @@ export default function LoginRole({ setRole, setActiveTab }: LoginPetaniProps) {
 
           <div className="pt-4 border-t flex justify-center">
             <button
-              onClick={() => setActiveTab("login-petani")}
+              onClick={() =>
+                setActiveTab
+                  ? setActiveTab("login-petani")
+                  : navigate("/login")
+              }
               className="text-xs font-bold text-gray-500 hover:text-emerald-600"
             >
               Login sebagai Petani

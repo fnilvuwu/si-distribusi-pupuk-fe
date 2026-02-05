@@ -12,10 +12,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 interface RegisterPetaniProps {
     setStatusVerifikasi: (v: "pending" | "verified" | "rejected") => void;
     setRole: (role: string) => void;
-    setActiveTab: (tab: string) => void;
+    setActiveTab?: (tab: string) => void;
 }
 
 import { registerPetani } from "../../api/auth";
@@ -25,6 +27,7 @@ export default function RegisterPetani({
     setRole,
     setActiveTab,
 }: RegisterPetaniProps) {
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         nama: "",
         nik: "",
@@ -126,12 +129,17 @@ export default function RegisterPetani({
             localStorage.setItem("user_id", String(result.id));
 
             setStatusVerifikasi("pending"); // Or 'verified' depending on logic, keeping 'pending' as per original
+            localStorage.setItem("status_verifikasi", "pending");
             setRole("petani");
-            setActiveTab("home");
+            navigate("/petani");
 
-        } catch (error: any) {
+        } catch (error) {
             console.error("Registration error:", error);
-            setErrors(error.message || "Terjadi kesalahan saat registrasi.");
+            if (error instanceof Error) {
+                setErrors(error.message);
+            } else {
+                setErrors("Terjadi kesalahan saat registrasi.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -142,7 +150,11 @@ export default function RegisterPetani({
             {/* Back Button */}
             <div className="max-w-2xl w-full mb-4">
                 <button
-                    onClick={() => setActiveTab("login")}
+                    onClick={() =>
+                        setActiveTab
+                            ? setActiveTab("login-petani")
+                            : navigate("/login")
+                    }
                     className="flex items-center gap-2 text-emerald-700 hover:text-emerald-800 font-medium transition-colors"
                 >
                     <ArrowLeft size={20} />
@@ -417,8 +429,8 @@ export default function RegisterPetani({
                         type="submit"
                         disabled={isLoading}
                         className={`w-full py-4 text-lg font-bold text-white rounded-xl shadow-lg transition-all ${isLoading
-                                ? "bg-emerald-400 cursor-not-allowed"
-                                : "bg-emerald-600 hover:bg-emerald-700"
+                            ? "bg-emerald-400 cursor-not-allowed"
+                            : "bg-emerald-600 hover:bg-emerald-700"
                             }`}
                     >
                         {isLoading ? "Mengirim Data..." : "Kirim Data Verifikasi"}

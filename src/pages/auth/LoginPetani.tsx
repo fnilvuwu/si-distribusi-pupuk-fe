@@ -1,13 +1,15 @@
 import { login } from "@/api/auth";
 import { Button } from "@/components/ui/Button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface LoginPetaniProps {
     setRole: (role: string) => void;
-    setActiveTab: (tab: string) => void;
+    setActiveTab?: (tab: string) => void;
 }
 
 export default function LoginPetani({ setRole, setActiveTab }: LoginPetaniProps) {
+    const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +42,7 @@ export default function LoginPetani({ setRole, setActiveTab }: LoginPetaniProps)
 
             // Set role and navigate
             setRole(response.role);
-            setActiveTab("home");
+            navigate("/petani");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Login gagal. Silakan coba lagi.");
         } finally {
@@ -109,7 +111,11 @@ export default function LoginPetani({ setRole, setActiveTab }: LoginPetaniProps)
                     <div className="text-center text-xs text-gray-400">
                         Belum terdaftar?{" "}
                         <button
-                            onClick={() => setActiveTab("register-petani")}
+                            onClick={() =>
+                                setActiveTab
+                                    ? setActiveTab("register-petani")
+                                    : navigate("/register")
+                            }
                             className="text-emerald-600 font-bold"
                         >
                             Daftar Petani
@@ -118,7 +124,11 @@ export default function LoginPetani({ setRole, setActiveTab }: LoginPetaniProps)
 
                     <div className="pt-4 border-t flex justify-center">
                         <button
-                            onClick={() => setActiveTab("login-role")}
+                            onClick={() =>
+                                setActiveTab
+                                    ? setActiveTab("login-role")
+                                    : navigate("/login/role")
+                            }
                             className="text-xs font-bold text-gray-500 hover:text-emerald-600"
                         >
                             Login sebagai Admin / Distributor
