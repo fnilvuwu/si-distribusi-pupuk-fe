@@ -155,6 +155,20 @@ export const laporHasilTani = async (data: LaporHasilPayload) => {
 };
 
 // 8. LIST LAPORAN HASIL TANI
+// API Response Interface (what backend sends)
+export interface LaporanApiResponse {
+  id: number;
+  tanggal_panen: string;
+  jenis_tanaman: string;
+  jumlah_hasil: number;
+  satuan: string;
+  petani_id: number;
+  bukti_url: string | null;
+  status_verifikasi: boolean;
+  created_at: string;
+}
+
+// Frontend Interface (what UI uses)
 export interface LaporanItem {
   id: number;
   tanggal_panen: string;
@@ -167,7 +181,18 @@ export interface LaporanItem {
 }
 
 export const getLaporanList = async (): Promise<LaporanItem[]> => {
-  const res = await api.get("/petani/laporan_hasil_tani");
-  return res.data;
+  const res = await api.get<LaporanApiResponse[]>("/petani/laporan_hasil_tani");
+
+  // Transform API response to frontend format
+  return res.data.map((item) => ({
+    id: item.id,
+    tanggal_panen: item.tanggal_panen,
+    jenis_tanaman: item.jenis_tanaman,
+    jumlah_hasil: item.jumlah_hasil,
+    satuan: item.satuan,
+    lokasi: undefined, // API doesn't provide lokasi, could be derived or added later
+    status: item.status_verifikasi ? "terverifikasi" : "dilaporkan",
+    created_at: item.created_at,
+  }));
 };
 
