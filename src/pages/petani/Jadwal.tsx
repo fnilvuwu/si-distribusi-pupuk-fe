@@ -1,10 +1,21 @@
 import type { RiwayatItem } from "@/api/petani";
 import { getRiwayat, konfirmasiTerima } from "@/api/petani";
 import { ConfirmReceiptModal } from "@/components/petani/ConfirmReceiptModal";
+import { SubmissionDetailModal } from "@/components/petani/SubmissionDetailModal";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { AlertCircle, CheckCircle2, Clock, History, MapPin, Package } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronRight, Clock, History, MapPin, Package } from "lucide-react";
 import { useEffect, useState } from "react";
+
+interface SubmissionDetail {
+    id: string;
+    tanggal: string;
+    waktu: string;
+    lokasi: string;
+    jenisPupuk: string;
+    jumlah: string;
+    status: "dijadwalkan" | "dikirim" | "selesai";
+}
 
 interface Props {
     statusVerifikasi: "pending" | "verified" | "rejected";
@@ -15,6 +26,11 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
     const [historyList, setHistoryList] = useState<RiwayatItem[]>([]);
     const [selectedEvent, setSelectedEvent] = useState<RiwayatItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Detail Modal State
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [detailData, setDetailData] = useState<SubmissionDetail | null>(null);
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -30,10 +46,8 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
             setLoading(true);
             const data = await getRiwayat();
 
-            // Separate Active Schedule (Dikirim) from History (Selesai)
-            // 'pending' usually goes to Pengajuan page, but if it has a schedule it might be here? 
-            // Assuming 'dikirim' implies scheduled/ready to pickup.
-            const active = data.filter(item => item.status === "dikirim");
+            // Aktif = semua yang belum selesai
+            const active = data.filter(item => item.status !== "selesai");
             const history = data.filter(item => item.status === "selesai");
 
             setScheduleList(active);
@@ -64,6 +78,23 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
             console.error("Gagal konfirmasi", error);
             alert("Gagal mengonfirmasi penerimaan.");
         }
+    };
+
+    const handleViewDetail = (e: React.MouseEvent, item: RiwayatItem) => {
+        e.stopPropagation();
+
+        const dateObj = new Date(item.created_at);
+
+        setDetailData({
+            id: `TRX-${item.id}`,
+            tanggal: dateObj.toLocaleDateString("id-ID"),
+            waktu: dateObj.toLocaleTimeString("id-ID"),
+            lokasi: item.lokasi_pengambilan || "Gudang Distribusi Pusat",
+            jenisPupuk: item.nama_pupuk,
+            jumlah: `${item.jumlah_disetujui || item.jumlah_diminta} Kg`,
+            status: item.status === "pending" ? "dijadwalkan" : (item.status as any),
+        });
+        setIsDetailOpen(true);
     };
 
     // --- UI: Not Verified State ---
@@ -103,78 +134,94 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
                         <Clock size={20} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">Jadwal Pengambilan</h2>
-                        <p className="text-sm text-gray-500">Konfirmasi penerimaan saat pupuk diambil</p>
+                        <h2 className="text-xl font-bold text-gray-800">Daftar Pengajuan Aktif</h2>
+                        <p className="text-sm text-gray-500">Pantau proses persetujuan dan konfirmasi penerimaan pupuk</p>
                     </div>
                 </div>
 
                 {scheduleList.length === 0 ? (
                     <div className="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                        <Clock className="mx-auto text-gray-300 mb-2" size={32} />
-                        <p className="text-gray-500 font-medium">Tidak ada jadwal aktif.</p>
-                        <p className="text-xs text-gray-400">Jadwal akan muncul setelah pengajuan disetujui dan diatur admin.</p>
+                        <Package className="mx-auto text-gray-300 mb-2" size={32} />
+                        <p className="text-gray-500 font-medium">Belum ada pengajuan aktif.</p>
+                        <p className="text-xs text-gray-400">Anda belum melakukan pengajuan pupuk atau semua telah selesai.</p>
                     </div>
                 ) : (
                     <div className="grid gap-4">
                         {scheduleList.map((item) => {
-                            // MOCK DATA GENERATION if fields are missing
-                            // In real app, `waktu_pengambilan` would come from backend
-                            const date = new Date(item.waktu_pengambilan || item.created_at);
+                            const date = new Date(item.created_at);
                             const dayName = date.toLocaleDateString("id-ID", { weekday: 'long' });
                             const dayDate = date.getDate();
-                            const monthYear = date.toLocaleDateString("id-ID", { month: 'short', year: '2-digit' });
-                            const time = date.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' }) + " WITA";
+                            const monthYear = date.toLocaleDateString("id-ID", { month: 'short', year: 'numeric' });
+                            const time = date.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
                             const location = item.lokasi_pengambilan || "Gudang Distribusi Pusat";
 
                             return (
                                 <div
                                     key={item.id}
                                     onClick={() => handleItemClick(item)}
-                                    className="cursor-pointer group"
+                                    className={item.status === "dikirim" ? "cursor-pointer active:scale-[0.98] transition-transform" : ""}
                                 >
-                                    <Card className="hover:shadow-lg transition-all border-emerald-100 ring-1 ring-emerald-500/20 overflow-hidden relative">
-                                        <div className="absolute top-0 right-0 p-3">
-                                            <span className="relative flex h-3 w-3">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                                            </span>
-                                        </div>
-
+                                    <Card
+                                        className={`group border-none shadow-sm bg-white overflow-hidden transition-all 
+                                        ${item.status === "dikirim" ? "cursor-pointer ring-2 ring-emerald-500/20 hover:shadow-md border-emerald-200" : ""}`}
+                                    >
                                         <div className="flex flex-col md:flex-row">
-                                            {/* Date Block */}
-                                            <div className="bg-emerald-50 md:w-32 p-4 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider opacity-70 group-hover:text-emerald-100">{dayName}</span>
-                                                <span className="text-3xl font-black">{dayDate}</span>
-                                                <span className="text-[10px] font-medium uppercase opacity-70 group-hover:text-emerald-100">{monthYear}</span>
+                                            <div className="bg-emerald-50 md:w-32 p-4 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-emerald-100 text-emerald-700">
+                                                <span className="text-[10px] font-bold uppercase">{dayName}</span>
+                                                <span className="text-2xl font-black">{dayDate}</span>
+                                                <span className="text-[10px] font-medium uppercase text-emerald-600">{monthYear}</span>
                                             </div>
 
                                             <div className="flex-1 p-5 space-y-4">
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center gap-2 text-emerald-700 font-semibold bg-emerald-50 w-fit px-3 py-1 rounded-full text-xs">
-                                                        <Clock size={14} /> <span>{time}</span>
+                                                <div className="flex justify-between items-start gap-4">
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center gap-1.5 text-gray-500 text-[11px]">
+                                                            <Clock size={12} />
+                                                            <span>{time}</span>
+                                                        </div>
+                                                        <h3 className="font-bold text-gray-800 flex items-center gap-1.5">
+                                                            <MapPin size={14} className="text-emerald-500" />
+                                                            {location}
+                                                        </h3>
                                                     </div>
 
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                                            {item.nama_pupuk}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
-                                                            <MapPin size={14} className="text-gray-400" />
-                                                            {location}
+                                                    <Badge status={item.status === "pending" ? "dijadwalkan" : (item.status as any)}>
+                                                        {item.status === "dikirim" ? "DIKIRIM" : item.status.toUpperCase()}
+                                                    </Badge>
+                                                </div>
+
+                                                {item.status === "dikirim" && (
+                                                    <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded w-fit animate-pulse">
+                                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full"></div>
+                                                        PUPUK TELAH DIKIRIM - KLIK DISINI UNTUK KONFIRMASI TERIMA
+                                                    </div>
+                                                )}
+
+                                                <div className="bg-slate-50 rounded-xl p-3 flex justify-between items-center border border-gray-100 group-hover:bg-white transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-white rounded-lg shadow-sm">
+                                                            <Package size={18} className="text-emerald-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] text-gray-400 font-bold uppercase leading-none mb-1">Komoditas</p>
+                                                            <p className="text-sm font-bold text-gray-700">{item.nama_pupuk}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-[9px] text-gray-400 font-bold uppercase leading-none mb-1">Total</p>
+                                                        <p className="text-sm font-black text-emerald-700">
+                                                            {item.jumlah_disetujui || item.jumlah_diminta} Kg
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                                    <div className="flex items-center gap-2">
-                                                        <Package size={16} className="text-gray-400" />
-                                                        <span className="text-sm font-medium text-gray-600">Jumlah pengambilan:</span>
-                                                    </div>
-                                                    <span className="text-lg font-black text-emerald-700">{item.jumlah_disetujui || item.jumlah_diminta} Kg</span>
-                                                </div>
-
-                                                <div className="w-full bg-emerald-600 text-white text-center py-2 rounded-lg font-bold text-xs mt-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                                                    KLIK UNTUK KONFIRMASI DITERIMA
+                                                <div className="flex justify-end pt-2">
+                                                    <button
+                                                        onClick={(e) => handleViewDetail(e, item)}
+                                                        className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 hover:underline tracking-widest uppercase"
+                                                    >
+                                                        Lihat Detail <ChevronRight size={12} />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -186,7 +233,7 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
                 )}
             </div>
 
-            {/* --- SECTION: History (Riwayat Selesai) --- */}
+            {/* --- SECTION: History (Riwayat Distribusi) --- */}
             {historyList.length > 0 && (
                 <div className="space-y-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center gap-2">
@@ -194,7 +241,7 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
                             <History size={20} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-700">Riwayat Selesai</h2>
+                            <h2 className="text-lg font-bold text-gray-700">Riwayat Distribusi</h2>
                             <p className="text-sm text-gray-400">Pengambilan yang telah selesai</p>
                         </div>
                     </div>
@@ -239,6 +286,12 @@ export default function PetaniJadwal({ statusVerifikasi }: Props) {
                     }}
                 />
             )}
+
+            <SubmissionDetailModal
+                isOpen={isDetailOpen}
+                onClose={() => setIsDetailOpen(false)}
+                data={detailData}
+            />
         </div>
     );
 }

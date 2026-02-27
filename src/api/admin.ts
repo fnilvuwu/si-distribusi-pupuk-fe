@@ -152,7 +152,7 @@ export interface PersetujuanPupuk {
     nama_pupuk: string;
     pupuk_id: number;
     jumlah_diminta: number;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'terverifikasi' | 'dijadwalkan' | 'selesai' | string;
     created_at: string;
 }
 
@@ -182,9 +182,23 @@ export interface JadwalDistribusi {
     nama_acara: string;
     tanggal: string;
     lokasi: string;
+    status: string;
     items: JadwalDistribusiItem[];
     created_at: string;
     created_by?: string;
+}
+
+export interface PenerimaPupuk {
+    id: number;
+    permohonan_id?: number;
+    petani_id?: number;
+    nama_petani: string;
+    pupuk_id?: number;
+    nama_pupuk: string;
+    jumlah_disetujui: number;
+    satuan: string;
+    status?: string;
+    created_at?: string;
 }
 
 export interface CreateJadwalDistribusiRequest {
@@ -276,7 +290,7 @@ export interface LaporanRekapTahunan {
 }
 
 export interface DownloadLaporanParams {
-    jenis: 'harian' | 'bulanan' | 'tahunan';
+    tipe: 'harian' | 'bulanan' | 'tahunan';
     tanggal?: string; // For harian
     tahun?: number; // For bulanan & tahunan
     bulan?: number; // For bulanan only
@@ -426,6 +440,11 @@ export const getPersetujuanPupuk = async (): Promise<PersetujuanPupuk[]> => {
     return response.data;
 };
 
+export const getRiwayatPersetujuanPupuk = async (): Promise<PersetujuanPupuk[]> => {
+    const response = await api.get(`${BASE_URL}/riwayat_persetujuan_pupuk`);
+    return response.data;
+};
+
 /**
  * Approve fertilizer request
  */
@@ -483,6 +502,26 @@ export const getJadwalDistribusiDetail = async (
     jadwalId: number
 ): Promise<JadwalDistribusi> => {
     const response = await api.get(`${BASE_URL}/jadwal_distribusi_pupuk/${jadwalId}`);
+    return response.data;
+};
+
+/**
+ * Finish a distribution schedule
+ */
+export const finishJadwalDistribusi = async (
+    jadwalId: number
+): Promise<ApiResponse<null>> => {
+    const response = await api.patch(`${BASE_URL}/jadwal_distribusi_pupuk/${jadwalId}/selesai`);
+    return response.data;
+};
+
+/**
+ * Get recipients of a distribution schedule
+ */
+export const getJadwalPenerima = async (
+    jadwalId: number
+): Promise<PenerimaPupuk[]> => {
+    const response = await api.get(`${BASE_URL}/jadwal_distribusi_pupuk/${jadwalId}/penerima`);
     return response.data;
 };
 
@@ -574,7 +613,7 @@ export const downloadLaporanRekap = async (
     link.href = url;
 
     // Generate filename based on params
-    const filename = `laporan_${params.jenis}_${params.tanggal || `${params.tahun}_${params.bulan || ''}`
+    const filename = `laporan_${params.tipe}_${params.tanggal || `${params.tahun}_${params.bulan || ''}`
         }.csv`;
 
     link.setAttribute('download', filename);

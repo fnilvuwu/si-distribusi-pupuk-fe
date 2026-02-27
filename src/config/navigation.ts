@@ -31,7 +31,7 @@ export const navigation = {
   ],
   distributor: [
     { id: "dashboard", label: "Distribusi Pupuk", icon: Truck, path: "/distributor" },
-    { id: "riwayat", label: "Riwayat Selesai", icon: Clock, path: "/distributor/riwayat" },
+    { id: "riwayat", label: "Riwayat Distribusi", icon: Clock, path: "/distributor/riwayat" },
   ],
   super_admin: [
     { id: "dashboard", label: "Monitoring Sistem", icon: TrendingUp, path: "/superadmin" },

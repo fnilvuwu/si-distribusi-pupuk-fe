@@ -3,9 +3,9 @@ import { api } from './client';
 // ==================== TYPES ====================
 
 export interface MetricsResponse {
-    uptime: string;
     total_users: number;
-    error_logs: number;
+    total_pengajuan: number;
+    total_event_distribusi: number;
 }
 
 export interface User {

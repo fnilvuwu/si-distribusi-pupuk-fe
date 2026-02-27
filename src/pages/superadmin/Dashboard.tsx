@@ -2,8 +2,8 @@ import type { MetricsResponse } from '@/api/superadmin';
 import { getMetrics } from '@/api/superadmin';
 import { Card } from "@/components/ui/Card";
 import {
-    AlertCircle,
-    TrendingUp,
+    CalendarDays,
+    FileText,
     Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -52,26 +52,26 @@ export default function SuperAdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="p-4">
                     <div className="flex justify-between items-start">
-                        <p className="text-xs text-gray-500 font-bold uppercase">Uptime Sistem</p>
-                        <TrendingUp size={16} className="text-emerald-600" />
-                    </div>
-                    <p className="text-2xl font-black mt-2">{metrics?.uptime || 'N/A'}</p>
-                </Card>
-
-                <Card className="p-4">
-                    <div className="flex justify-between items-start">
                         <p className="text-xs text-gray-500 font-bold uppercase">Total User</p>
                         <Users size={16} className="text-blue-600" />
                     </div>
-                    <p className="text-2xl font-black mt-2">{metrics?.total_users.toLocaleString() || 'N/A'}</p>
+                    <p className="text-2xl font-black mt-2">{metrics?.total_users?.toLocaleString() || '0'}</p>
                 </Card>
 
                 <Card className="p-4">
                     <div className="flex justify-between items-start">
-                        <p className="text-xs text-gray-500 font-bold uppercase">Error Log (24h)</p>
-                        <AlertCircle size={16} className="text-red-600" />
+                        <p className="text-xs text-gray-500 font-bold uppercase">Total Pengajuan</p>
+                        <FileText size={16} className="text-emerald-600" />
                     </div>
-                    <p className="text-2xl font-black mt-2">{metrics?.error_logs || 'N/A'}</p>
+                    <p className="text-2xl font-black mt-2">{metrics?.total_pengajuan?.toLocaleString() || '0'}</p>
+                </Card>
+
+                <Card className="p-4">
+                    <div className="flex justify-between items-start">
+                        <p className="text-xs text-gray-500 font-bold uppercase">Total Event Distribusi</p>
+                        <CalendarDays size={16} className="text-orange-600" />
+                    </div>
+                    <p className="text-2xl font-black mt-2">{metrics?.total_event_distribusi?.toLocaleString() || '0'}</p>
                 </Card>
             </div>
         </div>

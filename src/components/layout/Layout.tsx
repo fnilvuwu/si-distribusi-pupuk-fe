@@ -51,7 +51,7 @@ export default function Layout({
                 </div>
 
                 <footer className="hidden md:block py-4 px-8 text-center text-[10px] text-slate-400 uppercase font-bold tracking-[0.2em]">
-                    &copy; 2026 Pemerintah Kabupaten Mamasa • Sistem Informasi Distribusi Pupuk Gratis
+                    &copy; 2026 Pemerintah Kabupaten Mamasa • Sistem Distribusi Pupuk Gratis
                 </footer>
             </main>
         </div>

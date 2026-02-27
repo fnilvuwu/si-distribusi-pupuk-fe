@@ -5,7 +5,8 @@ import {
   getLaporanTahunan,
   type LaporanRekapBulanan,
   type LaporanRekapHarian,
-  type LaporanRekapTahunan
+  type LaporanRekapTahunan,
+  type DownloadLaporanParams
 } from "@/api/admin";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -72,15 +73,20 @@ export default function AdminLaporan() {
       setIsDownloading(true);
       setError(null);
 
-      const params: { jenis: 'harian' | 'bulanan' | 'tahunan'; tanggal?: string; tahun?: number; bulan?: number } = { jenis: filterMode };
+      if (!currentData) return;
 
-      if (filterMode === 'harian') {
-        params.tanggal = currentDate.toISOString().split('T')[0];
-      } else if (filterMode === 'bulanan') {
-        params.tahun = currentDate.getFullYear();
-        params.bulan = currentDate.getMonth() + 1;
-      } else {
-        params.tahun = currentDate.getFullYear();
+      const params: DownloadLaporanParams = { tipe: filterMode };
+
+      if (filterMode === 'harian' && 'tanggal' in currentData) {
+        params.tanggal = currentData.tanggal;
+        const d = new Date(currentData.tanggal);
+        params.tahun = d.getFullYear();
+        params.bulan = d.getMonth() + 1;
+      } else if (filterMode === 'bulanan' && 'tahun' in currentData && 'bulan' in currentData) {
+        params.tahun = currentData.tahun;
+        params.bulan = currentData.bulan;
+      } else if (filterMode === 'tahunan' && 'tahun' in currentData) {
+        params.tahun = currentData.tahun;
       }
 
       await downloadLaporanRekap(params);

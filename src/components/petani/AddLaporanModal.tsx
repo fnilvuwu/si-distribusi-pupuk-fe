@@ -1,5 +1,6 @@
 import {
     Calendar,
+    FileUp,
     MapPin,
     Scale,
     Sprout,
@@ -12,6 +13,7 @@ interface LaporanData {
     jenisKomoditas: string;
     totalHasil: number;
     lokasi: string;
+    dokumenPendukung: File | null;
 }
 
 interface AddLaporanModalProps {
@@ -31,6 +33,7 @@ export default function AddLaporanModal({
         jenisKomoditas: "Padi (Beras)",
         totalHasil: 0,
         lokasi: "",
+        dokumenPendukung: null,
     });
 
     const [formData, setFormData] = useState<LaporanData>(initializeFormData());
@@ -45,6 +48,16 @@ export default function AddLaporanModal({
             ...prev,
             [name]: name === "totalHasil" ? Number(value) || 0 : value,
         }));
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            setFormData((prev) => ({
+                ...prev,
+                dokumenPendukung: file,
+            }));
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -136,6 +149,20 @@ export default function AddLaporanModal({
                                 onChange={handleInputChange}
                                 required
                                 className="w-full text-sm rounded-md border-gray-300 border p-2 outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+
+                        {/* Dokumen Pendukung */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-gray-600 flex items-center gap-1">
+                                <FileUp size={14} /> Dokumen/Gambar Pendukung (Opsional)
+                            </label>
+                            <input
+                                type="file"
+                                name="dokumenPendukung"
+                                onChange={handleFileChange}
+                                accept="image/*,.pdf,.doc,.docx"
+                                className="w-full text-sm rounded-md border-gray-300 border p-2 outline-none focus:ring-2 focus:ring-emerald-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                             />
                         </div>
 

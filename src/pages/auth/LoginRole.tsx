@@ -70,10 +70,11 @@ export default function LoginRole({ setRole, setActiveTab }: LoginRoleProps) {
 
         {/* Header */}
         <div className="bg-emerald-700 p-10 text-white text-center">
-          <h1 className="text-4xl font-black tracking-tighter italic">SIPUPUK</h1>
-          <p className="text-emerald-100 mt-1 text-sm font-medium mb-3">
-            Sistem Informasi Distribusi Pupuk Gratis
-          </p>
+          <h1 className="text-3xl font-black tracking-tight leading-snug mb-4">
+            Sistem Distribusi
+            <br />
+            <span>Pupuk Gratis</span>
+          </h1>
 
           <div className="flex justify-center">
             <img src="/logo_mamasa.png" className="h-24 w-24 object-contain" />

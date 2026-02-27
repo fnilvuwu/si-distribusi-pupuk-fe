@@ -148,16 +148,16 @@ export default function DistributorDashboard() {
                     let uiStatus: "upcoming" | "ongoing" | "completed";
                     if (jadwal.status === 'selesai') {
                         uiStatus = 'completed';
-                    } else if (jadwal.status === 'dikirim' || eventDateOnly <= today) {
+                    } else if (jadwal.status === 'dikirim') {
                         uiStatus = 'ongoing';
-                    } else {
+                    } else { // 'aktif' atau 'dijadwalkan'
                         uiStatus = 'upcoming';
                     }
 
                     return {
                         id: jadwal.id,
                         jadwal_id: jadwal.id,
-                        eventName: `Distribusi - ${jadwal.lokasi}`,
+                        eventName: jadwal.nama_acara || `Distribusi - ${jadwal.lokasi}`,
                         date: jadwal.tanggal_pengiriman,
                         displayDate: eventDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
                         locationPoint: jadwal.lokasi,
@@ -208,12 +208,10 @@ export default function DistributorDashboard() {
             // Call API first
             await updateStatusJadwal(eventId, 'mulai');
 
-            setEvents(prev => prev.map(event =>
-                event.id === eventId
-                    ? { ...event, status: "ongoing" as const, startTime: new Date().toISOString() }
-                    : event
-            ));
-            setExpandedEvents(prev => [...prev, eventId]);
+            // Reload data
+            await fetchJadwalDistribusi();
+
+            setExpandedEvents(prev => prev.includes(eventId) ? prev : [...prev, eventId]);
         } catch (err: unknown) {
             console.error("Failed to start event:", err);
             alert(getErrorMessage(err) || "Gagal memulai event");
@@ -233,19 +231,15 @@ export default function DistributorDashboard() {
         try {
             await updateStatusJadwal(completionSummary.id, 'selesai');
 
-            setEvents(prev => prev.map(event =>
-                event.id === completionSummary.id
-                    ? { ...event, status: "completed" as const, endTime: completionSummary.endTime }
-                    : event
-            ));
             setCompletionSummary(null);
-            alert("Event berhasil diselesaikan dan dipindahkan ke Riwayat!");
+            alert("Jadwal distribusi resmi ditutup dan dipindahkan ke Riwayat!");
 
             // Refresh list to update status derived from backend
-            fetchJadwalDistribusi();
+            await fetchJadwalDistribusi();
         } catch (err: unknown) {
             console.error("Failed to complete event:", err);
-            alert(getErrorMessage(err) || "Gagal menyelesaikan event. Pastikan semua petani telah diverifikasi/ditolak.");
+            const errorMessage = getErrorMessage(err);
+            alert(errorMessage || "Tidak dapat menyelesaikan jadwal. Masih ada petani yang belum selesai/ditolak.");
         }
     };
 
@@ -352,12 +346,12 @@ export default function DistributorDashboard() {
                                     }`}>
                                     <div className="flex flex-col md:flex-row">
                                         {/* Status/Date Block */}
-                                        <div className={`md:w-28 p-4 flex flex-col items-center justify-center text-white ${isOngoing ? "bg-emerald-600" : "bg-blue-600"
+                                        <div className={`md:w-28 p-4 flex flex-col items-center justify-center text-white ${isOngoing ? "bg-amber-500" : "bg-blue-600"
                                             }`}>
-                                            <span className="text-xs font-bold opacity-80 uppercase">
-                                                {isOngoing ? "AKTIF" : "SEGERA"}
+                                            <span className="text-xs font-bold opacity-80 uppercase text-center leading-tight">
+                                                {isOngoing ? "Sedang Dikirim" : "Aktif"}
                                             </span>
-                                            <span className="text-3xl font-black">{new Date(event.date).getDate()}</span>
+                                            <span className="text-3xl font-black mt-1">{new Date(event.date).getDate()}</span>
                                             <span className="text-xs font-bold opacity-80 uppercase">
                                                 {new Date(event.date).toLocaleDateString('id-ID', { month: 'short' })}
                                             </span>
@@ -369,7 +363,7 @@ export default function DistributorDashboard() {
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <h3 className="font-bold text-gray-900 text-lg leading-none">{event.eventName}</h3>
                                                     <Badge status={isOngoing ? "diproses" : "pending"}>
-                                                        {isOngoing ? "Sedang Berlangsung" : "Akan Datang"}
+                                                        {isOngoing ? "Sedang Dikirim" : "Aktif"}
                                                     </Badge>
                                                 </div>
 
@@ -426,10 +420,10 @@ export default function DistributorDashboard() {
                                                             <Button
                                                                 variant="primary"
                                                                 onClick={() => handleStartEvent(event.id)}
-                                                                className="flex-1 h-10 rounded-xl font-bold text-sm"
+                                                                className="flex-1 h-10 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-700"
                                                             >
                                                                 <Play size={16} className="mr-2" />
-                                                                Mulai Event
+                                                                Mulai Distribusi
                                                             </Button>
                                                         </>
                                                     ) : (
@@ -448,10 +442,11 @@ export default function DistributorDashboard() {
                                                             <Button
                                                                 variant="primary"
                                                                 onClick={() => handleEndEvent(event)}
-                                                                className="flex-1 h-10 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700"
+                                                                disabled={progress.verified < progress.total || progress.total === 0}
+                                                                className="flex-1 h-10 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                                             >
                                                                 <CheckCircle2 size={16} className="mr-2" />
-                                                                Selesaikan
+                                                                Selesaikan Jadwal
                                                             </Button>
                                                         </>
                                                     )}
@@ -489,6 +484,13 @@ export default function DistributorDashboard() {
                                                                         : "bg-white border-gray-200 cursor-default"
                                                                     }`}
                                                             >
+                                                                {isOngoing && !isVerified && (
+                                                                    <div className="flex justify-end mb-2">
+                                                                        <button className="flex items-center justify-center h-7 px-2 text-[10px] w-full rounded-md border border-dashed border-emerald-500 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-700 transition-colors font-bold">
+                                                                            <Camera size={12} className="mr-1" /> Verifikasi Penerima
+                                                                        </button>
+                                                                    </div>
+                                                                )}
                                                                 <div className="space-y-2">
                                                                     <div className="flex items-start justify-between gap-2">
                                                                         <div className="flex-1">
@@ -700,7 +702,7 @@ export default function DistributorDashboard() {
 
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                                    <Camera size={16} className="text-emerald-500" /> Foto Bukti Penerimaan
+                                    <Camera size={16} className="text-emerald-500" /> Foto Bukti Penerimaan (Opsional)
                                 </label>
                                 <div
                                     className="group h-48 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center bg-gray-50 hover:bg-emerald-50 hover:border-emerald-300 transition-all cursor-pointer overflow-hidden relative"

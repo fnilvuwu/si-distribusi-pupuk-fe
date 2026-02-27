@@ -36,11 +36,11 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
-        <div className="hidden sm:block text-right">
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 leading-none mb-1">
+        <div className="text-right">
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 leading-none mb-1 mt-1">
             {role}
           </p>
-          <p className="text-sm font-bold text-slate-700">{fullName}</p>
+          <p className="text-xs sm:text-sm font-bold text-slate-700 truncate max-w-[120px] sm:max-w-none">{fullName}</p>
         </div>
         <div className="h-10 w-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-black border-2 border-white shadow-sm ring-1 ring-emerald-50">
           {initials}

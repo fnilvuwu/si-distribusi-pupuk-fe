@@ -152,40 +152,42 @@ export default function PetaniPengajuan({ statusVerifikasi }: Props) {
             </div>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">No. Pengajuan</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">Jenis Pupuk</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">Jumlah</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">Lokasi / Keterangan</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">Tanggal</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
-                {/* <th className="px-6 py-4 text-left font-semibold text-gray-700">Aksi</th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {submissions.map((submission, index) => (
-                <tr key={submission.id} className={index !== submissions.length - 1 ? "border-b" : ""}>
-                  <td className="px-6 py-4 font-medium text-gray-900">#{submission.id}</td>
-                  <td className="px-6 py-4 text-gray-600">{submission.nama_pupuk}</td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {submission.jumlah_disetujui || submission.jumlah_diminta} Kg
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
-                    - {/* Lokasi not in RiwayatItem yet, maybe add later */}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{new Date(submission.created_at).toLocaleDateString("id-ID")}</td>
-                  <td className="px-6 py-4">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${getStatusColor(submission.status)}`}>
-                      {getStatusIcon(submission.status)}
-                      {mapStatusLabel(submission.status)}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm whitespace-nowrap md:whitespace-normal">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">No. Pengajuan</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Jenis Pupuk</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Jumlah</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Lokasi / Keterangan</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Tanggal</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
+                  {/* <th className="px-6 py-4 text-left font-semibold text-gray-700">Aksi</th> */}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {submissions.map((submission, index) => (
+                  <tr key={submission.id} className={index !== submissions.length - 1 ? "border-b" : ""}>
+                    <td className="px-6 py-4 font-medium text-gray-900">#{submission.id}</td>
+                    <td className="px-6 py-4 text-gray-600">{submission.nama_pupuk}</td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {submission.jumlah_disetujui || submission.jumlah_diminta} Kg
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 max-w-xs truncate">
+                      - {/* Lokasi not in RiwayatItem yet, maybe add later */}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">{new Date(submission.created_at).toLocaleDateString("id-ID")}</td>
+                    <td className="px-6 py-4">
+                      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${getStatusColor(submission.status)}`}>
+                        {getStatusIcon(submission.status)}
+                        {mapStatusLabel(submission.status)}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 

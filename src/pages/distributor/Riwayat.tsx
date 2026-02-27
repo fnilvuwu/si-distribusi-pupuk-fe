@@ -21,7 +21,6 @@ type ReceiptItem = {
 
 type DistributionEvent = {
     jadwal_id: number;
-    permohonan_id: number;
     eventName: string;
     date: string;
     month: string;
@@ -65,8 +64,7 @@ export default function DistributorRiwayat() {
                 const eventDate = new Date(item.tanggal_pengiriman);
                 return {
                     jadwal_id: item.jadwal_id,
-                    permohonan_id: item.permohonan_id,
-                    eventName: `Distribusi - ${item.lokasi}`,
+                    eventName: item.nama_acara || `Distribusi - ${item.lokasi}`,
                     date: eventDate.getDate().toString().padStart(2, '0'),
                     month: eventDate.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase(),
                     day: eventDate.toLocaleDateString('id-ID', { weekday: 'long' }),
@@ -296,7 +294,7 @@ export default function DistributorRiwayat() {
                         {/* Modal Header */}
                         <div className="p-6 bg-gray-50 border-b flex justify-between items-center">
                             <div>
-                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Detail Manifest Distribusi</p>
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">List Penerima Pupuk</p>
                                 <h3 className="text-xl font-bold text-gray-900">{selectedEvent.eventName}</h3>
                             </div>
                             <button onClick={() => setSelectedEvent(null)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
@@ -352,15 +350,12 @@ export default function DistributorRiwayat() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-4 bg-gray-50 border-t flex gap-3">
+                        <div className="p-4 bg-gray-50 border-t">
                             <button
-                                className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors"
+                                className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors"
                                 onClick={() => setSelectedEvent(null)}
                             >
                                 Tutup
-                            </button>
-                            <button className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all">
-                                Download Berita Acara (PDF)
                             </button>
                         </div>
                     </div>

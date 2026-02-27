@@ -133,7 +133,7 @@ export function AddPengajuanModal({ isOpen, onClose, onSubmit, loading }: AddPen
                                         <option value="">Pilih Jenis</option>
                                         {pupukOptions.map((pupuk) => (
                                             <option key={pupuk.id} value={pupuk.nama_pupuk}>
-                                                {pupuk.nama_pupuk} (Stok: {pupuk.jumlah_stok} {pupuk.satuan})
+                                                {pupuk.nama_pupuk}
                                             </option>
                                         ))}
                                     </select>

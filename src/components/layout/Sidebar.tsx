@@ -43,7 +43,9 @@ export default function Sidebar({
           />
         </div>
         {isSidebarOpen && (
-          <span className="font-black text-2xl tracking-tighter">SIPUPUK</span>
+          <div className="flex flex-col">
+            <span className="font-black text-lg leading-tight tracking-tight">Sistem Distribusi Pupuk Gratis</span>
+          </div>
         )}
       </div>
 

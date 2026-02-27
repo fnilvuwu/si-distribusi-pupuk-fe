@@ -4,7 +4,7 @@ import { api } from './client';
 
 export interface JadwalDistribusi {
     id: number;
-    permohonan_id: number;
+    nama_acara: string;
     tanggal_pengiriman: string;
     lokasi: string;
     status: string;
@@ -26,7 +26,7 @@ export interface PenerimaItem {
 
 export interface JadwalDetail {
     jadwal_id: number;
-    permohonan_id: number;
+    nama_acara: string;
     tanggal_pengiriman: string;
     lokasi: string;
     jadwal_status: string;
@@ -36,7 +36,7 @@ export interface JadwalDetail {
 
 export interface RiwayatDistribusi {
     jadwal_id: number;
-    permohonan_id: number;
+    nama_acara: string;
     tanggal_pengiriman: string;
     lokasi: string;
     status: string;

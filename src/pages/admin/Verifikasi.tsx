@@ -413,11 +413,9 @@ export default function AdminVerifikasi() {
   }
 
   // --- MAIN LIST VIEW ---
-  const pendingPetani = petaniList; // Now assumes API returns pending only or we show all from this endpoint as pending
-  // const verifiedPetani = petaniList.filter(p => p.status_verifikasi); // OLD LOGIC
+  const pendingPetani = petaniList.filter(p => !p.status_verifikasi);
 
-  const pendingHasilTani = hasilTaniList; // Idem
-  // const verifiedHasilTani = hasilTaniList.filter(h => h.status_verifikasi); // OLD LOGIC
+  const pendingHasilTani = hasilTaniList.filter(h => !h.status_verifikasi);
 
   return (
     <div className="space-y-6">

@@ -103,7 +103,7 @@ export interface RiwayatItem {
   nama_pupuk: string;
   jumlah_diminta: number;
   jumlah_disetujui: number | null;
-  status: "pending" | "dikirim" | "selesai";
+  status: "pending" | "dikirim" | "selesai" | "dijadwalkan";
   created_at: string;
   // Added fields for Schedule
   lokasi_pengambilan?: string;

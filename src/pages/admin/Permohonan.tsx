@@ -1,8 +1,9 @@
 import {
   approvePersetujuanPupuk,
-  getPersetujuanPupuk,
-  getStokList,
   getJadwalDistribusi,
+  getPersetujuanPupuk,
+  getRiwayatPersetujuanPupuk,
+  getStokList,
   rejectPersetujuanPupuk,
   type JadwalDistribusi,
   type PersetujuanPupuk,
@@ -19,6 +20,7 @@ type ActionType = "approve" | "reject" | null;
 /* ================== COMPONENT ================== */
 export default function AdminPermohonan() {
   const [applications, setApplications] = useState<PersetujuanPupuk[]>([]);
+  const [historyApplications, setHistoryApplications] = useState<PersetujuanPupuk[]>([]);
   const [selectedApp, setSelectedApp] = useState<PersetujuanPupuk | null>(null);
   const [actionType, setActionType] = useState<ActionType>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function AdminPermohonan() {
 
   const [stokList, setStokList] = useState<StokPupuk[]>([]);
   const [jadwalList, setJadwalList] = useState<JadwalDistribusi[]>([]);
-  
+
   const [formData, setFormData] = useState({
     jumlahDisetujui: 0,
     pupukId: 0,
@@ -62,8 +64,12 @@ export default function AdminPermohonan() {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getPersetujuanPupuk();
-      setApplications(data);
+      const [pendingData, historyData] = await Promise.all([
+        getPersetujuanPupuk(),
+        getRiwayatPersetujuanPupuk()
+      ]);
+      setApplications(pendingData);
+      setHistoryApplications(historyData);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || "Gagal memuat data permohonan");
@@ -149,8 +155,6 @@ export default function AdminPermohonan() {
     }
   };
 
-  const pendingApplications = applications.filter(app => app.status === 'pending');
-
   return (
     <div className="space-y-4">
       {/* Error Display */}
@@ -174,7 +178,7 @@ export default function AdminPermohonan() {
           </Button>
         </div>
         <p className="text-sm text-gray-500">
-          {pendingApplications.length} Permohonan Menunggu
+          {applications.length} Permohonan Menunggu
         </p>
       </div>
 
@@ -184,13 +188,13 @@ export default function AdminPermohonan() {
           <div className="flex justify-center items-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
           </div>
-        ) : pendingApplications.length === 0 ? (
+        ) : applications.length === 0 ? (
           <div className="py-12 text-center text-gray-400">
             Tidak ada permohonan yang menunggu persetujuan
           </div>
         ) : (
           <div className="space-y-3">
-            {pendingApplications.map((app) => (
+            {applications.map((app) => (
               <div
                 key={app.id}
                 className="p-4 border rounded-xl flex justify-between items-center hover:bg-gray-50"
@@ -207,6 +211,51 @@ export default function AdminPermohonan() {
                 <Button size="sm" onClick={() => handleViewDetail(app)}>
                   Lihat Detail
                 </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* History List */}
+      <Card title="Riwayat Permohonan Disetujui">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+          </div>
+        ) : historyApplications.length === 0 ? (
+          <div className="py-12 text-center text-gray-400">
+            Belum ada riwayat permohonan yang disetujui
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {historyApplications.map((app) => (
+              <div
+                key={app.id}
+                className="p-4 border rounded-xl flex justify-between items-center bg-gray-50 hover:bg-gray-100 transition-colors"
+                onClick={() => handleViewDetail(app)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div>
+                  <p className="font-semibold">{app.nama_petani}</p>
+                  <p className="text-sm text-gray-600">
+                    {app.nama_pupuk}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {new Date(app.created_at).toLocaleDateString('id-ID')}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`px-3 py-1 text-xs font-bold rounded-full ${app.status.toLowerCase() === 'selesai' ? 'bg-blue-100 text-blue-700' :
+                      app.status.toLowerCase() === 'dijadwalkan' ? 'bg-amber-100 text-amber-700' :
+                        'bg-emerald-100 text-emerald-700'
+                    }`}>
+                    {app.status.toUpperCase()}
+                  </span>
+                  <p className="text-sm font-medium text-gray-700">
+                    {app.jumlah_diminta} {stokList.find(s => s.id === app.pupuk_id)?.satuan || 'Kg'}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -238,14 +287,26 @@ export default function AdminPermohonan() {
 
               <div className="border-t pt-3">
                 <p className="text-xs text-gray-400 font-bold uppercase mb-2">Permohonan Pupuk</p>
-                <div className="bg-emerald-50 p-3 rounded-lg">
-                  <p className="font-bold text-emerald-800">{selectedApp.nama_pupuk}</p>
-                  <p className="text-emerald-600">Jumlah: {selectedApp.jumlah_diminta}</p>
+                <div className="bg-emerald-50 p-3 rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="font-bold text-emerald-800">{selectedApp.nama_pupuk}</p>
+                    <p className="text-emerald-600">Jumlah Diminta: {selectedApp.jumlah_diminta}</p>
+                  </div>
+                  <div>
+                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${selectedApp.status.toLowerCase() === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        selectedApp.status.toLowerCase() === 'selesai' ? 'bg-blue-100 text-blue-700' :
+                          selectedApp.status.toLowerCase() === 'dijadwalkan' ? 'bg-purple-100 text-purple-700' :
+                            selectedApp.status.toLowerCase() === 'rejected' || selectedApp.status.toLowerCase() === 'ditolak' ? 'bg-red-100 text-red-700' :
+                              'bg-emerald-100 text-emerald-700'
+                      }`}>
+                      {selectedApp.status.toUpperCase()}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {!actionType && (
+            {!actionType && selectedApp.status.toLowerCase() === 'pending' && (
               <div className="flex gap-2 pt-4">
                 <Button
                   variant="ghost"
@@ -299,47 +360,25 @@ export default function AdminPermohonan() {
 
                 <div>
                   <label className="block text-sm font-bold mb-2">
-                    Jenis Pupuk
+                    Jadwal Pengambilan
                   </label>
                   <select
                     className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white"
-                    value={formData.pupukId}
+                    value={formData.jadwalId}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        pupukId: parseInt(e.target.value) || 0,
+                        jadwalId: parseInt(e.target.value) || 0,
                       })
                     }
                   >
-                    {stokList.map((stok) => (
-                      <option key={stok.id} value={stok.id}>
-                        {stok.nama_pupuk} (Stok: {stok.jumlah_stok} {stok.satuan})
+                    <option value={0}>-- Pilih Jadwal --</option>
+                    {jadwalList.map((jadwal) => (
+                      <option key={jadwal.id} value={jadwal.id}>
+                        {jadwal.nama_acara} - {new Date(jadwal.tanggal).toLocaleDateString("id-ID")} ({jadwal.lokasi})
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div>
-                   <label className="block text-sm font-bold mb-2">
-                     Jadwal Pengambilan
-                   </label>
-                   <select
-                     className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white"
-                     value={formData.jadwalId}
-                     onChange={(e) =>
-                       setFormData({
-                         ...formData,
-                         jadwalId: parseInt(e.target.value) || 0,
-                       })
-                     }
-                   >
-                     <option value={0}>-- Pilih Jadwal --</option>
-                     {jadwalList.map((jadwal) => (
-                       <option key={jadwal.id} value={jadwal.id}>
-                         {jadwal.nama_acara} - {new Date(jadwal.tanggal).toLocaleDateString("id-ID")} ({jadwal.lokasi})
-                       </option>
-                     ))}
-                   </select>
                 </div>
 
                 <div className="flex gap-2">

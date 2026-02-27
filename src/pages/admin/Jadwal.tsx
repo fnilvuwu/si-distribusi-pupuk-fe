@@ -1,12 +1,15 @@
 import {
+  finishJadwalDistribusi,
   getJadwalDistribusi,
   getJadwalDistribusiDetail,
-  type JadwalDistribusi
+  getJadwalPenerima,
+  type JadwalDistribusi,
+  type PenerimaPupuk
 } from "@/api/admin";
 import AddScheduleModal from "@/components/admin/AddScheduleModal";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Calendar, Loader2, MapPin, Package, Plus, X } from "lucide-react";
+import { Calendar, CheckCircle, Loader2, MapPin, Package, Plus, Users, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 /* ================= COMPONENT ================= */
@@ -15,7 +18,11 @@ export default function AdminJadwal() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [events, setEvents] = useState<JadwalDistribusi[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<JadwalDistribusi | null>(null);
+  const [recipients, setRecipients] = useState<PenerimaPupuk[]>([]);
+  const [isRecipientsLoading, setIsRecipientsLoading] = useState(false);
+  const [showRecipients, setShowRecipients] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadJadwalData = useCallback(async () => {
@@ -42,6 +49,7 @@ export default function AdminJadwal() {
   const handleViewDetail = async (id: number) => {
     try {
       setIsLoading(true);
+      setShowRecipients(false);
       const detail = await getJadwalDistribusiDetail(id);
       setSelectedEvent(detail);
     } catch (err: unknown) {
@@ -57,6 +65,40 @@ export default function AdminJadwal() {
 
   const handleSave = () => {
     loadJadwalData();
+  };
+
+  const handleFinishEvent = async (id: number) => {
+    if (!window.confirm("Apakah Anda yakin ingin mengakhiri event ini? Status tidak dapat dikembalikan.")) return;
+    try {
+      setIsFinishing(true);
+      await finishJadwalDistribusi(id);
+      await loadJadwalData();
+      setSelectedEvent(prev => prev ? { ...prev, status: 'selesai' } : null);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message :
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        "Gagal mengakhiri event";
+      setError(errorMessage);
+    } finally {
+      setIsFinishing(false);
+    }
+  };
+
+  const handleLoadRecipients = async (id: number) => {
+    try {
+      setIsRecipientsLoading(true);
+      setError(null);
+      const data = await getJadwalPenerima(id);
+      setRecipients(data);
+      setShowRecipients(true);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message :
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        "Gagal memuat daftar penerima";
+      setError(errorMessage);
+    } finally {
+      setIsRecipientsLoading(false);
+    }
   };
 
   return (
@@ -111,8 +153,13 @@ export default function AdminJadwal() {
                       <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight leading-tight">
                         {event.nama_acara}
                       </h3>
-                      <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded text-[10px] font-black border border-emerald-100 uppercase tracking-wider">
-                        {new Date(event.tanggal) >= new Date() ? 'Mendatang' : 'Selesai'}
+                      <span className={`px-2 py-1 rounded text-[10px] font-black border uppercase tracking-wider ${event.status === 'selesai'
+                        ? 'bg-gray-50 text-gray-600 border-gray-200'
+                        : event.status === 'dikirim'
+                          ? 'bg-blue-50 text-blue-600 border-blue-100'
+                          : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        }`}>
+                        {event.status}
                       </span>
                     </div>
 
@@ -162,9 +209,19 @@ export default function AdminJadwal() {
           <div className="bg-white rounded-xl w-full max-w-2xl p-6 space-y-4">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-black text-xl text-gray-800">{selectedEvent.nama_acara}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-black text-xl text-gray-800">{selectedEvent.nama_acara}</h3>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-black border uppercase tracking-wider ${selectedEvent.status === 'selesai'
+                    ? 'bg-gray-50 text-gray-600 border-gray-200'
+                    : selectedEvent.status === 'dikirim'
+                      ? 'bg-blue-50 text-blue-600 border-blue-100'
+                      : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                    }`}>
+                    {selectedEvent.status}
+                  </span>
+                </div>
                 <p className="text-sm text-gray-500 mt-1">
-                  Dibuat: {new Date(selectedEvent.created_at).toLocaleDateString('id-ID')}
+                  Dibuat: {selectedEvent.created_at ? new Date(selectedEvent.created_at).toLocaleDateString('id-ID') : '-'}
                 </p>
               </div>
               <button onClick={() => setSelectedEvent(null)} className="text-gray-400 hover:text-gray-600">
@@ -190,7 +247,21 @@ export default function AdminJadwal() {
             </div>
 
             <div>
-              <h4 className="text-xs text-gray-400 font-bold uppercase mb-3">Detail Pupuk</h4>
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-xs text-gray-400 font-bold uppercase">Detail Pupuk</h4>
+                {!showRecipients && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleLoadRecipients(selectedEvent.id)}
+                    disabled={isRecipientsLoading}
+                    className="h-7 text-xs"
+                  >
+                    {isRecipientsLoading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Users className="w-3 h-3 mr-1" />}
+                    Lihat Penerima
+                  </Button>
+                )}
+              </div>
               <div className="space-y-2">
                 {selectedEvent.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center p-3 border rounded-lg">
@@ -206,9 +277,52 @@ export default function AdminJadwal() {
               </div>
             </div>
 
-            <Button variant="secondary" className="w-full" onClick={() => setSelectedEvent(null)}>
-              Tutup
-            </Button>
+            {showRecipients && (
+              <div className="mt-4 border-t pt-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-xs text-gray-400 font-bold uppercase">Daftar Penerima</h4>
+                  <span className="text-xs font-bold text-gray-500">{recipients.length} Orang</span>
+                </div>
+                <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+                  {recipients.length === 0 ? (
+                    <div className="text-center py-4 text-sm text-gray-500">Belum ada penerima</div>
+                  ) : (
+                    recipients.map((rec) => (
+                      <div key={rec.id} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-bold text-sm text-gray-800">{rec.nama_petani}</p>
+                          <p className="text-xs text-gray-500">{rec.nama_pupuk}</p>
+                        </div>
+                        <span className="text-sm font-black text-emerald-600">
+                          {rec.jumlah_disetujui} {rec.satuan}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button variant="secondary" className="flex-1" onClick={() => setSelectedEvent(null)}>
+                Tutup
+              </Button>
+              {selectedEvent.status !== 'selesai' && (
+                <Button
+                  variant="primary"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+                  onClick={() => handleFinishEvent(selectedEvent.id)}
+                  disabled={isFinishing}
+                >
+                  {isFinishing ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Akhiri Event
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}
